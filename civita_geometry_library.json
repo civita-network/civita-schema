@@ -1,0 +1,422 @@
+{
+  "library_name": "civita_geometry_library",
+  "version": "1.0.0",
+  "description": "Shared, versioned parametrization of geometry types used across CIVITA. Each geometry type defines parameters and a right-handed local coordinate system; numerical parameter values and context-specific identifiers belong to individual experimental or computational records.",
+  "global_conventions": {
+    "coordinate_system_type": "right_handed_cartesian",
+    "default_length_unit": "mm",
+    "naming_convention": "lowercase_with_underscores",
+    "geometry_type_identifier_pattern": "^GLOB-GEO[0-9]{4}$",
+    "geometry_type_references": "Consumers reference geometry_type_id and geometry_type_version; the local geometry record independently stores parameter values and any dataset-specific metadata.",
+    "reference_system_convention": "The origin and positive local axis directions are defined by the reference figure together with the textual definition. All local axes form a right-handed Cartesian system.",
+    "versioning_policy": "Published geometry type versions are immutable. A change affecting geometric meaning, parametrization, or reference system requires a new version.",
+    "documentation_repository": "https://github.com/civita-network/civita-documentation",
+    "reference_figures_note": "Figure URLs currently point to main for convenience. For immutable published releases, pin each figure reference to a documentation commit SHA or release tag corresponding to the library version."
+  },
+  "geometries": {
+    "prism": {
+      "geometry_type_id": "GLOB-GEO0001",
+      "name": "prism",
+      "version": "1.0.0",
+      "display_name": "Prism",
+      "description": "Rectangular prismatic specimen.",
+      "reference_system": {
+        "type": "right_handed_cartesian",
+        "figure": {
+          "repository": "civita-network/civita-documentation",
+          "path": "figs/geometries/prism.png",
+          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/prism.png"
+        },
+        "origin": "Corner point indicated in the prism reference figure.",
+        "x_axis": "Longitudinal direction along the prism length.",
+        "y_axis": "Transverse direction along the prism thickness.",
+        "z_axis": "Vertical direction along the prism depth."
+      },
+      "parameters": [
+        {
+          "name": "length",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Dimension along the local x direction.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "thickness",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Dimension along the local y direction.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "depth",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Dimension along the local z direction.",
+          "exclusiveMinimum": 0
+        }
+      ]
+    },
+    "cube": {
+      "geometry_type_id": "GLOB-GEO0002",
+      "name": "cube",
+      "version": "1.0.0",
+      "display_name": "Cube",
+      "description": "Cubic specimen defined by one edge length.",
+      "reference_system": {
+        "type": "right_handed_cartesian",
+        "figure": {
+          "repository": "civita-network/civita-documentation",
+          "path": "figs/geometries/cube.png",
+          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/cube.png"
+        },
+        "origin": "Corner point indicated in the cube reference figure.",
+        "x_axis": "Direction along one cube edge.",
+        "y_axis": "Direction along the second orthogonal cube edge.",
+        "z_axis": "Direction along the third orthogonal cube edge."
+      },
+      "parameters": [
+        {
+          "name": "length",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Cube edge length along the local x, y, and z directions.",
+          "exclusiveMinimum": 0
+        }
+      ]
+    },
+    "cylinder": {
+      "geometry_type_id": "GLOB-GEO0003",
+      "name": "cylinder",
+      "version": "1.0.0",
+      "display_name": "Cylinder",
+      "description": "Right circular cylindrical specimen.",
+      "reference_system": {
+        "type": "right_handed_cartesian",
+        "figure": {
+          "repository": "civita-network/civita-documentation",
+          "path": "figs/geometries/cylinder.png",
+          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/cylinder.png"
+        },
+        "origin": "Reference point indicated in the cylinder reference figure.",
+        "x_axis": "Cylinder longitudinal axis along the cylinder length.",
+        "y_axis": "First transverse direction in the circular cross section.",
+        "z_axis": "Second transverse direction in the circular cross section.",
+        "notes": "The diameter is measured in the transverse y-z plane."
+      },
+      "parameters": [
+        {
+          "name": "length",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Cylinder dimension along the local x direction.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "diameter",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Diameter of the circular cross section in the local y-z plane.",
+          "exclusiveMinimum": 0
+        }
+      ]
+    },
+    "notched_prism": {
+      "geometry_type_id": "GLOB-GEO0004",
+      "name": "notched_prism",
+      "version": "1.0.0",
+      "display_name": "Notched Prism",
+      "description": "Rectangular prismatic specimen containing a notch oriented in the local z direction.",
+      "reference_system": {
+        "type": "right_handed_cartesian",
+        "figure": {
+          "repository": "civita-network/civita-documentation",
+          "path": "figs/geometries/notched_prism.png",
+          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/notched_prism.png"
+        },
+        "origin": "Midspan point on the specimen centerline indicated in the notched-prism reference figure.",
+        "x_axis": "Longitudinal direction along the specimen length.",
+        "y_axis": "Transverse direction along the specimen thickness.",
+        "z_axis": "Vertical direction along the specimen depth.",
+        "notch_convention": "The notch is oriented in the local z direction. notch_offset is the signed x-coordinate of the notch centerline relative to midspan."
+      },
+      "parameters": [
+        {
+          "name": "length",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Dimension along the local x direction.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "thickness",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Dimension along the local y direction.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "depth",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Dimension along the local z direction.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "notch_offset",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Signed x-coordinate of the notch centerline measured from specimen midspan. A value of 0 indicates a centered notch."
+        },
+        {
+          "name": "notch_depth",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Depth of the notch measured along the local z direction from the notched face into the specimen.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "notch_width",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Opening width of the notch.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "notch_tip_radius",
+          "required": false,
+          "type": "number",
+          "unit": "mm",
+          "description": "Radius at the notch tip.",
+          "minimum": 0
+        }
+      ]
+    },
+    "dogbone": {
+      "geometry_type_id": "GLOB-GEO0005",
+      "name": "dogbone",
+      "version": "1.0.0",
+      "display_name": "Dogbone",
+      "description": "Dogbone specimen with enlarged heads, transition regions, and a reduced central region.",
+      "reference_system": {
+        "type": "right_handed_cartesian",
+        "figure": {
+          "repository": "civita-network/civita-documentation",
+          "path": "figs/geometries/dogbone.png",
+          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/dogbone.png"
+        },
+        "origin": "Reference point indicated in the dogbone reference figure.",
+        "x_axis": "Longitudinal direction along the full specimen length.",
+        "y_axis": "In-plane width direction.",
+        "z_axis": "Thickness direction."
+      },
+      "parameters": [
+        {
+          "name": "length",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Overall specimen length along the local x direction.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "dogbone_central_width",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Width of the reduced central region.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "dogbone_central_length",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Length of the reduced central region.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "dogbone_thickness",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Specimen thickness along the local z direction.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "dogbone_head_width",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Width of each enlarged head region.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "dogbone_head_length",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Length of each enlarged head region.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "dogbone_transition_length",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Longitudinal length of each transition region.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "dogbone_transition_width",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Width change associated with each transition region.",
+          "exclusiveMinimum": 0
+        }
+      ]
+    },
+    "ell_shape": {
+      "geometry_type_id": "GLOB-GEO0006",
+      "name": "ell_shape",
+      "version": "1.0.0",
+      "display_name": "Ell Shape",
+      "description": "L-shaped specimen represented by two orthogonal legs.",
+      "reference_system": {
+        "type": "right_handed_cartesian",
+        "figure": {
+          "repository": "civita-network/civita-documentation",
+          "path": "figs/geometries/ell_shape.png",
+          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/ell_shape.png"
+        },
+        "origin": "Reentrant or reference corner indicated in the ell-shape reference figure.",
+        "x_axis": "Horizontal leg direction.",
+        "y_axis": "Thickness direction.",
+        "z_axis": "Vertical leg direction."
+      },
+      "parameters": [
+        {
+          "name": "thickness",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Specimen thickness along the local y direction.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "ell_length_1",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Length of the first leg as defined in the geometry scheme.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "ell_depth_1",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Depth of the first leg as defined in the geometry scheme.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "ell_length_2",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Length of the second leg as defined in the geometry scheme.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "ell_depth_2",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Depth of the second leg as defined in the geometry scheme.",
+          "exclusiveMinimum": 0
+        }
+      ]
+    },
+    "notched_cylinder": {
+      "geometry_type_id": "GLOB-GEO0007",
+      "name": "notched_cylinder",
+      "version": "1.0.0",
+      "display_name": "Notched Cylinder",
+      "description": "Cylindrical specimen containing a notch.",
+      "reference_system": {
+        "type": "right_handed_cartesian",
+        "figure": {
+          "repository": "civita-network/civita-documentation",
+          "path": "figs/geometries/notched_cylinder.png",
+          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/notched_cylinder.png"
+        },
+        "origin": "Reference point indicated in the notched-cylinder reference figure.",
+        "x_axis": "Cylinder longitudinal axis along the cylinder length.",
+        "y_axis": "First transverse direction in the circular cross section.",
+        "z_axis": "Second transverse direction in the circular cross section.",
+        "notes": "The diameter is measured in the transverse y-z plane. The notch width is measured along the cylinder axis and the notch depth is measured radially."
+      },
+      "parameters": [
+        {
+          "name": "length",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Cylinder dimension along the local x direction.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "diameter",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Diameter of the circular cross section in the local y-z plane.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "notch_depth",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Radial notch depth.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "notch_width",
+          "required": true,
+          "type": "number",
+          "unit": "mm",
+          "description": "Axial notch width measured along the local x direction.",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "notch_tip_radius",
+          "required": false,
+          "type": "number",
+          "unit": "mm",
+          "description": "Radius at the notch tip, when reported.",
+          "minimum": 0
+        }
+      ]
+    }
+  },
+  "validation_conventions": {
+    "parameters": "Each geometry instance must supply all parameters marked required for its referenced geometry type. Additional parameters are subject to the versioned type definition.",
+    "numeric_parameters": "Parameter values must be finite numbers in the declared units.",
+    "positive_dimensions": "Dimensions marked exclusiveMinimum: 0 must be strictly positive. Nonnegative radii may equal zero. Offset parameters may be signed.",
+    "geometric_constraints": "Geometric compatibility conditions, such as maximum notch depth, must be enforced by geometry-specific validators. Their formal definitions are to be developed without changing existing parameter semantics.",
+    "local_identifiers": "Experimental and computational geometry record identifiers, publication source identifiers, and submission file formats are intentionally outside the scope of this global library."
+  }
+}
