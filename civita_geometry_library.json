@@ -301,7 +301,7 @@
           "path": "figs/geometries/ell_shape.png",
           "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/ell_shape.png"
         },
-        "origin": "Reentrant or reference corner indicated in the ell-shape reference figure.",
+        "origin": "Upper-left exterior corner on the rear face of the specimen, marked O in the ell-shape reference figure.",
         "x_axis": "Horizontal leg direction.",
         "y_axis": "Thickness direction.",
         "z_axis": "Vertical leg direction."
