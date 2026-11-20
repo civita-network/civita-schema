@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "literature_sources_schema.json",
   "title": "Literature Sources Validation Schema",
-  "description": "Validation schema for records in the literature_sources tab of the Concrete Grand Challenge Experimental Database submission template.",
+  "description": "Validation schema for records in the literature_sources tab of the CIVITA Experimental Database submission template.",
   "type": "object",
   "additionalProperties": false,
 
