@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civita.network/schemas/keywords.schema.json",
+  "title": "CIVITA Keywords Schema",
+  "description": "Defines searchable keywords associated with literature sources in CIVITA databases.",
+  "metadata": {
+    "id": "civita.common.keywords",
+    "title": "CIVITA Keywords Schema",
+    "description": "Defines searchable keywords associated with literature sources in the CIVITA Experimental and Computational Databases.",
+    "type": "record_schema",
+    "version": "1.0.0",
+    "status": "draft",
+    "repository": "https://github.com/civita-network/civita-schema"
+  },
+  "type": "array",
+  "minItems": 3,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "source_id",
+      "keyword"
+    ],
+    "properties": {
+      "source_id": {
+        "type": "string",
+        "description": "Identifier of the source associated with the keyword.",
+        "pattern": "^SRC[0-9]{4}$",
+        "examples": [
+          "SRC0001"
+        ]
+      },
+      "keyword": {
+        "type": "string",
+        "description": "Nonempty scientific keyword allowing Unicode and scientific punctuation, without leading or trailing whitespace.",
+        "minLength": 1,
+        "pattern": "^(?![\\s\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028-\\u2029\\u202F\\u205F\\u3000\\uFEFF])[^\\r\\n]*[^\\s\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028-\\u2029\\u202F\\u205F\\u3000\\uFEFF](?![\\s\\S])",
+        "examples": [
+          "three point bending",
+          "chloride diffusion",
+          "carbon fiber reinforced polymer",
+          "reversed cyclic loading"
+        ]
+      }
+    }
+  }
+}

@@ -25,3 +25,24 @@ if (-not (Test-Json -LiteralPath ./literature_source.json -Schema $schema)) {
     throw 'Invalid literature source record'
 }
 ```
+
+## Keywords
+
+The [keywords schema](keywords.schema.json) defines free-text keyword records for both CIVITA databases. The `source_id` in each record identifies a literature source within the same database.
+
+At final submission, validate the `keywords` array against the schema. Its `minItems: 3` sets a minimum for the whole array. A dataset with multiple literature sources also needs a count for every source listed in `literature_sources`, including sources with zero keyword records. Count only records whose `source_id` matches the source. Reject the final submission if any source has fewer than three keywords. Defer both minimums when saving work in progress.
+
+This PowerShell 7.5 example assumes `$dataset` contains the final submission and its source references have already been checked.
+
+```powershell
+$keywordJson = ConvertTo-Json -InputObject @($dataset.keywords) -Depth 5
+if (-not (Test-Json -Json $keywordJson -SchemaFile ./keywords.schema.json)) {
+    throw 'Invalid keyword collection'
+}
+foreach ($source in $dataset.literature_sources) {
+    $count = @($dataset.keywords | Where-Object { $_.source_id -ceq $source.source_id }).Count
+    if ($count -lt 3) {
+        throw "Fewer than three keywords for $($source.source_id)"
+    }
+}
+```
