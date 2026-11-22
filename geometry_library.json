@@ -431,7 +431,7 @@
       "name": "notched_cylinder",
       "version": "1.0.0",
       "display_name": "Notched Cylinder",
-      "description": "Cylindrical specimen with a circumferential notch at midheight.",
+      "description": "Right circular cylinder with an axisymmetric circumferential notch centered at z = length / 2. In an axial section, the notch has parallel sides with a strictly positive straight-sided radial portion before the semicircular tip.",
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
@@ -442,7 +442,7 @@
         "y_axis": "Second transverse direction in the circular x-y cross section.",
         "z_axis": "Longitudinal direction along the cylinder axis, from the reference end face at z = 0 toward the opposite end face at z = length.",
         "notes": "The diameter is measured in the transverse x-y plane. The notch width is measured axially along z, and the notch depth is measured radially in the cross section.",
-        "notch_convention": "The notch extends around the entire circumference and is centered halfway between the two end faces, at z = length / 2 relative to O."
+        "notch_convention": "The axisymmetric notch extends around the entire circumference and is centered at z = length / 2 relative to O. Its axial opening width is notch_width. In an axial section, the parallel sides terminate in a semicircle with radius equal to half notch_width. notch_depth is the total radial penetration from the original outer cylindrical surface to the deepest point of the semicircular tip. The straight-sided radial portion has length notch_depth - 0.5 * notch_width and must be strictly positive. The remaining radius at the notch root is 0.5 * diameter - notch_depth and must be strictly positive."
       },
       "parameters": [
         {
@@ -458,7 +458,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Diameter of the circular cross section in the local x-y plane.",
+          "description": "Outer cylinder diameter measured in the local x-y plane.",
           "exclusiveMinimum": 0
         },
         {
@@ -466,7 +466,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Radial depth of the circumferential notch measured inward from the outer cylindrical surface.",
+          "description": "Total radial penetration measured inward from the original outer cylindrical surface to the deepest point of the semicircular notch tip.",
           "exclusiveMinimum": 0
         },
         {
@@ -474,16 +474,35 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Axial width of the circumferential notch measured along the local z axis.",
+          "description": "Axial opening width of the circumferential notch measured along the local z axis.",
           "exclusiveMinimum": 0
-        },
+        }
+      ],
+      "derived_parameters": [
         {
           "name": "notch_tip_radius",
-          "required": false,
           "type": "number",
           "unit": "mm",
-          "description": "Radius at the tip of the circumferential notch in an axial section, when reported.",
-          "minimum": 0
+          "description": "Radius of the semicircular notch termination in an axial section, equal to half the axial notch opening width.",
+          "expression": "0.5 * notch_width",
+          "exclusiveMinimum": 0
+        }
+      ],
+      "geometric_constraints": [
+        {
+          "left": "notch_depth",
+          "operator": "<",
+          "right": "0.5 * diameter"
+        },
+        {
+          "left": "notch_width",
+          "operator": "<",
+          "right": "length"
+        },
+        {
+          "left": "notch_depth",
+          "operator": ">",
+          "right": "0.5 * notch_width"
         }
       ]
     }
