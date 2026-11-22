@@ -104,10 +104,10 @@
         "figure": {
           "path": "figures/geometries/generated/cylinder.svg"
         },
-        "origin": "Center of the upper circular end face at z = 0, marked O in the cylinder reference figure.",
+        "origin": "Center of the reference circular end face at z = 0, marked O in the reference figure.",
         "x_axis": "First transverse direction in the circular x-y cross section.",
         "y_axis": "Second transverse direction in the circular x-y cross section.",
-        "z_axis": "Longitudinal direction along the cylinder length from the upper end face.",
+        "z_axis": "Longitudinal direction along the cylinder axis, from the reference end face at z = 0 toward the opposite end face at z = length.",
         "notes": "The diameter is measured in the transverse x-y plane."
       },
       "parameters": [
@@ -380,10 +380,10 @@
         "figure": {
           "path": "figures/geometries/generated/notched_cylinder.svg"
         },
-        "origin": "Center of the upper circular end face at z = 0, marked O in the notched-cylinder reference figure.",
+        "origin": "Center of the reference circular end face at z = 0, marked O in the reference figure.",
         "x_axis": "First transverse direction in the circular x-y cross section.",
         "y_axis": "Second transverse direction in the circular x-y cross section.",
-        "z_axis": "Longitudinal direction along the cylinder length from the upper end face.",
+        "z_axis": "Longitudinal direction along the cylinder axis, from the reference end face at z = 0 toward the opposite end face at z = length.",
         "notes": "The diameter is measured in the transverse x-y plane. The notch width is measured axially along z, and the notch depth is measured radially in the cross section.",
         "notch_convention": "The notch extends around the entire circumference and is centered halfway between the two end faces, at z = length / 2 relative to O."
       },
