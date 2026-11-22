@@ -134,7 +134,7 @@
       "name": "notched_prism",
       "version": "1.0.0",
       "display_name": "Notched Prism",
-      "description": "Rectangular prismatic specimen containing a notch oriented in the local z direction.",
+      "description": "Rectangular prismatic specimen with a notch along the local z axis. The notch has parallel sides and a semicircular tip whose radius is half the opening width.",
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
@@ -144,7 +144,7 @@
         "x_axis": "Longitudinal direction along the specimen length.",
         "y_axis": "Transverse direction along the specimen thickness.",
         "z_axis": "Vertical direction along the specimen depth.",
-        "notch_convention": "The notch is oriented along the local z axis. notch_depth is the positive distance from the notched face into the specimen in either direction along that axis. notch_offset is the signed x-coordinate of the notch centerline relative to midspan."
+        "notch_convention": "The notch has parallel sides and terminates in a semicircle whose radius is half notch_width. notch_depth is the strictly positive distance along the local z axis from the notched face to the deepest point of the tip, regardless of the sign of the coordinate displacement. When notch_depth equals half notch_width, the straight-sided segment has zero length. notch_offset is the signed x-coordinate of the notch centerline relative to midspan."
       },
       "parameters": [
         {
@@ -183,7 +183,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Positive scalar distance from the notched face into the specimen along the local z axis, regardless of the sign of the coordinate displacement.",
+          "description": "Positive scalar distance from the notched face to the deepest point of the semicircular tip along the local z axis, regardless of the sign of the coordinate displacement.",
           "exclusiveMinimum": 0
         },
         {
@@ -193,14 +193,38 @@
           "unit": "mm",
           "description": "Opening width of the notch.",
           "exclusiveMinimum": 0
-        },
+        }
+      ],
+      "derived_parameters": [
         {
           "name": "notch_tip_radius",
-          "required": false,
           "type": "number",
           "unit": "mm",
-          "description": "Radius at the notch tip.",
-          "minimum": 0
+          "description": "Radius of the semicircular notch termination, equal to half the notch opening width.",
+          "expression": "0.5 * notch_width",
+          "exclusiveMinimum": 0
+        }
+      ],
+      "geometric_constraints": [
+        {
+          "left": "notch_depth",
+          "operator": ">=",
+          "right": "0.5 * notch_width"
+        },
+        {
+          "left": "notch_depth",
+          "operator": "<",
+          "right": "depth"
+        },
+        {
+          "left": "notch_offset + 0.5 * notch_width",
+          "operator": "<",
+          "right": "0.5 * length"
+        },
+        {
+          "left": "0.5 * notch_width - notch_offset",
+          "operator": "<",
+          "right": "0.5 * length"
         }
       ]
     },
@@ -439,6 +463,6 @@
     "geometric_constraints": "After validating independent inputs and their bounds, enforce any geometric_constraints defined for the resolved version. Evaluate each left and right expression and compare the results with the specified operator.",
     "local_identifiers": "Experimental and computational geometry record identifiers, publication source identifiers, and submission file formats are intentionally outside the scope of this global library.",
     "derived_parameters": "Compute each derived parameter from the validated independent inputs and check the result against its declared bounds. Derived values are computed separately from the parameters submitted with the instance.",
-    "expression_syntax": "Expressions contain only finite decimal literals, names of independent parameters in the same definition, parentheses, and binary arithmetic operators +, -, *, and /. Parentheses group first, then multiplication and division, then addition and subtraction. Operators of equal precedence associate left to right. Reject division by zero and nonfinite results. Geometric constraints use the same expression syntax on each side and > for a strict comparison."
+    "expression_syntax": "Expressions contain only finite decimal literals, names of independent parameters in the same definition, parentheses, and binary arithmetic operators +, -, *, and /. Parentheses group first, then multiplication and division, then addition and subtraction. Operators of equal precedence associate left to right. Reject division by zero and nonfinite results. Geometric constraints use the same expression syntax on each side and allow > (strictly greater than), >= (greater than or equal to), and < (strictly less than)."
   }
 }
