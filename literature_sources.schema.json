@@ -1,13 +1,23 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "literature_sources_schema.json",
-  "title": "Literature Sources Validation Schema",
-  "description": "Validation schema for records in the literature_sources tab of the CIVITA Experimental Database submission template.",
+  "$id": "https://civita.network/schemas/literature_sources.schema.json",
+  "title": "CIVITA Literature Sources Schema",
+  "description": "Defines literature source records shared by the CIVITA Experimental and Computational Databases.",
+  "metadata": {
+    "id": "civita.common.literature_sources",
+    "title": "CIVITA Literature Sources Schema",
+    "description": "Defines literature source records shared by the CIVITA Experimental and Computational Databases.",
+    "type": "record_schema",
+    "version": "1.0.0",
+    "status": "draft",
+    "repository": "https://github.com/civita-network/civita-schema"
+  },
   "type": "object",
   "additionalProperties": false,
 
   "required": [
     "source_id",
+    "source_type",
     "title",
     "authors"
   ],
@@ -23,15 +33,7 @@
     "source_type": {
       "type": "string",
       "description": "Type of source. Must correspond to an entry in the controlled vocabulary source_types.json.",
-      "enum": [
-        "journal_article",
-        "conference_paper",
-        "book_chapter",
-        "phd_thesis",
-        "report",
-        "dataset",
-        "other"
-      ]
+      "x-civita-vocabulary": "source_types.json"
     },
 
     "peer_reviewed": {
