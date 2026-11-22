@@ -18,7 +18,7 @@
     "geometry_type_identifier_pattern": "^GLOB-GEO[0-9]{4}$",
     "geometry_type_references": "Consumers reference geometry_type_id and geometry_type_version; the local geometry record independently stores parameter values and any dataset-specific metadata.",
     "reference_system_convention": "The origin and positive local axis directions are defined by the reference figure together with the textual definition. All local axes form a right-handed Cartesian system.",
-    "versioning_policy": "Published geometry type versions are immutable. Changes affecting scientific interpretation of the parametrization, reference system, or figure require an appropriate geometry type version update.",
+    "versioning_policy": "Draft definitions may be corrected at their existing versions before the first release. Formally released geometry type versions are immutable. Changes affecting the scientific interpretation of released parametrizations, reference systems, or figures require new geometry type versions.",
     "reference_figures_note": "Maintain each authoritative figure and its geometry definition together. Published references must identify an immutable repository commit or release and resolve the figure paths at that same revision.",
     "figure_path_base": "Figure paths are relative to the root of civita-schema."
   },
@@ -104,11 +104,11 @@
         "figure": {
           "path": "figures/geometries/cylinder.png"
         },
-        "origin": "Reference point indicated in the cylinder reference figure.",
-        "x_axis": "Cylinder longitudinal axis along the cylinder length.",
-        "y_axis": "First transverse direction in the circular cross section.",
-        "z_axis": "Second transverse direction in the circular cross section.",
-        "notes": "The diameter is measured in the transverse y-z plane."
+        "origin": "Center of the upper circular end face at z = 0, marked O in the cylinder reference figure.",
+        "x_axis": "First transverse direction in the circular x-y cross section.",
+        "y_axis": "Second transverse direction in the circular x-y cross section.",
+        "z_axis": "Longitudinal direction along the cylinder length from the upper end face.",
+        "notes": "The diameter is measured in the transverse x-y plane."
       },
       "parameters": [
         {
@@ -116,7 +116,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Cylinder dimension along the local x direction.",
+          "description": "Cylinder length measured along the local z axis.",
           "exclusiveMinimum": 0
         },
         {
@@ -124,7 +124,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Diameter of the circular cross section in the local y-z plane.",
+          "description": "Diameter of the circular cross section in the local x-y plane.",
           "exclusiveMinimum": 0
         }
       ]
@@ -144,7 +144,7 @@
         "x_axis": "Longitudinal direction along the specimen length.",
         "y_axis": "Transverse direction along the specimen thickness.",
         "z_axis": "Vertical direction along the specimen depth.",
-        "notch_convention": "The notch is oriented in the local z direction. notch_offset is the signed x-coordinate of the notch centerline relative to midspan."
+        "notch_convention": "The notch is oriented along the local z axis. notch_depth is the positive distance from the notched face into the specimen in either direction along that axis. notch_offset is the signed x-coordinate of the notch centerline relative to midspan."
       },
       "parameters": [
         {
@@ -183,7 +183,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Depth of the notch measured along the local z direction from the notched face into the specimen.",
+          "description": "Positive scalar distance from the notched face into the specimen along the local z axis, regardless of the sign of the coordinate displacement.",
           "exclusiveMinimum": 0
         },
         {
@@ -209,16 +209,16 @@
       "name": "dogbone",
       "version": "1.0.0",
       "display_name": "Dogbone",
-      "description": "Dogbone specimen with enlarged heads, transition regions, and a reduced central region.",
+      "description": "Dogbone specimen with two identical enlarged heads, two identical transition regions, and a reduced central region.",
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
           "path": "figures/geometries/dogbone.png"
         },
         "origin": "Reference point indicated in the dogbone reference figure.",
-        "x_axis": "Longitudinal direction along the full specimen length.",
-        "y_axis": "In-plane width direction.",
-        "z_axis": "Thickness direction."
+        "x_axis": "Width direction in the specimen plane.",
+        "y_axis": "Thickness direction.",
+        "z_axis": "Longitudinal direction along the full specimen length."
       },
       "parameters": [
         {
@@ -226,15 +226,15 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Overall specimen length along the local x direction.",
+          "description": "Overall specimen length along the local z axis.",
           "exclusiveMinimum": 0
         },
         {
-          "name": "dogbone_central_width",
+          "name": "width",
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Width of the reduced central region.",
+          "description": "Overall specimen width across the enlarged heads along the local x axis.",
           "exclusiveMinimum": 0
         },
         {
@@ -242,23 +242,15 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Length of the reduced central region.",
+          "description": "Length of the reduced central region along the local z axis.",
           "exclusiveMinimum": 0
         },
         {
-          "name": "dogbone_thickness",
+          "name": "dogbone_central_width",
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Specimen thickness along the local z direction.",
-          "exclusiveMinimum": 0
-        },
-        {
-          "name": "dogbone_head_width",
-          "required": true,
-          "type": "number",
-          "unit": "mm",
-          "description": "Width of each enlarged head region.",
+          "description": "Width of the reduced central region along the local x axis.",
           "exclusiveMinimum": 0
         },
         {
@@ -266,24 +258,46 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Length of each enlarged head region.",
+          "description": "Length of each enlarged head along the local z axis.",
           "exclusiveMinimum": 0
         },
         {
-          "name": "dogbone_transition_length",
+          "name": "dogbone_thickness",
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Longitudinal length of each transition region.",
+          "description": "Specimen thickness along the local y axis.",
+          "exclusiveMinimum": 0
+        }
+      ],
+      "derived_parameters": [
+        {
+          "name": "dogbone_transition_length",
+          "type": "number",
+          "unit": "mm",
+          "description": "Longitudinal length of each transition region along the local z axis.",
+          "expression": "0.5 * (length - 2 * dogbone_head_length - dogbone_central_length)",
           "exclusiveMinimum": 0
         },
         {
           "name": "dogbone_transition_width",
-          "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Width change associated with each transition region.",
+          "description": "Lateral width reduction on each side from the enlarged head to the reduced central region along the local x axis.",
+          "expression": "0.5 * (width - dogbone_central_width)",
           "exclusiveMinimum": 0
+        }
+      ],
+      "geometric_constraints": [
+        {
+          "left": "length",
+          "operator": ">",
+          "right": "2 * dogbone_head_length + dogbone_central_length"
+        },
+        {
+          "left": "width",
+          "operator": ">",
+          "right": "dogbone_central_width"
         }
       ]
     },
@@ -351,17 +365,18 @@
       "name": "notched_cylinder",
       "version": "1.0.0",
       "display_name": "Notched Cylinder",
-      "description": "Cylindrical specimen containing a notch.",
+      "description": "Cylindrical specimen with a circumferential notch at midheight.",
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
           "path": "figures/geometries/notched_cylinder.png"
         },
-        "origin": "Reference point indicated in the notched-cylinder reference figure.",
-        "x_axis": "Cylinder longitudinal axis along the cylinder length.",
-        "y_axis": "First transverse direction in the circular cross section.",
-        "z_axis": "Second transverse direction in the circular cross section.",
-        "notes": "The diameter is measured in the transverse y-z plane. The notch width is measured along the cylinder axis and the notch depth is measured radially."
+        "origin": "Center of the upper circular end face at z = 0, marked O in the notched-cylinder reference figure.",
+        "x_axis": "First transverse direction in the circular x-y cross section.",
+        "y_axis": "Second transverse direction in the circular x-y cross section.",
+        "z_axis": "Longitudinal direction along the cylinder length from the upper end face.",
+        "notes": "The diameter is measured in the transverse x-y plane. The notch width is measured axially along z, and the notch depth is measured radially in the cross section.",
+        "notch_convention": "The notch extends around the entire circumference and is centered halfway between the two end faces, at z = length / 2 relative to O."
       },
       "parameters": [
         {
@@ -369,7 +384,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Cylinder dimension along the local x direction.",
+          "description": "Cylinder length measured along the local z axis.",
           "exclusiveMinimum": 0
         },
         {
@@ -377,7 +392,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Diameter of the circular cross section in the local y-z plane.",
+          "description": "Diameter of the circular cross section in the local x-y plane.",
           "exclusiveMinimum": 0
         },
         {
@@ -385,7 +400,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Radial notch depth.",
+          "description": "Radial depth of the circumferential notch measured inward from the outer cylindrical surface.",
           "exclusiveMinimum": 0
         },
         {
@@ -393,7 +408,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Axial notch width measured along the local x direction.",
+          "description": "Axial width of the circumferential notch measured along the local z axis.",
           "exclusiveMinimum": 0
         },
         {
@@ -401,7 +416,7 @@
           "required": false,
           "type": "number",
           "unit": "mm",
-          "description": "Radius at the notch tip, when reported.",
+          "description": "Radius at the tip of the circumferential notch in an axial section, when reported.",
           "minimum": 0
         }
       ]
@@ -409,10 +424,12 @@
   },
   "validation_conventions": {
     "geometry_type_resolution": "Resolve the exact geometry_type_id and geometry_type_version in the common library. Reject a geometry instance if that pair cannot be resolved.",
-    "parameters": "Require the parameters marked as required for the resolved geometry type version. Reject unknown names unless that definition expressly permits them.",
+    "parameters": "Validate the required independent inputs defined in parameters. Submitted values contain independent parameters only. Reject unknown input names unless the geometry definition expressly permits them.",
     "numeric_parameters": "Parameter values must be finite numbers in the declared units.",
     "positive_dimensions": "Dimensions marked exclusiveMinimum: 0 must be strictly positive. Nonnegative radii may equal zero. Offset parameters may be signed.",
-    "geometric_constraints": "Apply geometry-specific compatibility constraints when formally defined by the resolved geometry type version.",
-    "local_identifiers": "Experimental and computational geometry record identifiers, publication source identifiers, and submission file formats are intentionally outside the scope of this global library."
+    "geometric_constraints": "After validating independent inputs and their bounds, enforce any geometric_constraints defined for the resolved version. Evaluate each left and right expression and compare the results with the specified operator.",
+    "local_identifiers": "Experimental and computational geometry record identifiers, publication source identifiers, and submission file formats are intentionally outside the scope of this global library.",
+    "derived_parameters": "Compute each derived parameter from the validated independent inputs and check the result against its declared bounds. Derived values are computed separately from the parameters submitted with the instance.",
+    "expression_syntax": "Expressions contain only finite decimal literals, names of independent parameters in the same definition, parentheses, and binary arithmetic operators +, -, *, and /. Parentheses group first, then multiplication and division, then addition and subtraction. Operators of equal precedence associate left to right. Reject division by zero and nonfinite results. Geometric constraints use the same expression syntax on each side and > for a strict comparison."
   }
 }
