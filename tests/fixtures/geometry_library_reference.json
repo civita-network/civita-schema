@@ -1,0 +1,308 @@
+{
+  "$comment": "Regression snapshot of the approved geometry definitions (geometry_library.json 1.0.0). Update deliberately, together with the library, when a definition is intentionally revised.",
+  "geometries": {
+    "prism": {
+      "geometry_type_id": "GLOB-GEO0001",
+      "version": "1.0.0",
+      "parameters": [
+        {
+          "name": "length",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "thickness",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "depth",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        }
+      ],
+      "derived_parameters": [],
+      "geometric_constraints": [],
+      "figure": "figures/geometries/generated/prism.svg"
+    },
+    "cube": {
+      "geometry_type_id": "GLOB-GEO0002",
+      "version": "1.0.0",
+      "parameters": [
+        {
+          "name": "length",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        }
+      ],
+      "derived_parameters": [],
+      "geometric_constraints": [],
+      "figure": "figures/geometries/generated/cube.svg"
+    },
+    "cylinder": {
+      "geometry_type_id": "GLOB-GEO0003",
+      "version": "1.0.0",
+      "parameters": [
+        {
+          "name": "length",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "diameter",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        }
+      ],
+      "derived_parameters": [],
+      "geometric_constraints": [],
+      "figure": "figures/geometries/generated/cylinder.svg"
+    },
+    "notched_prism": {
+      "geometry_type_id": "GLOB-GEO0004",
+      "version": "1.0.0",
+      "parameters": [
+        {
+          "name": "length",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "thickness",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "depth",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "notch_offset",
+          "type": "number",
+          "required": true,
+          "unit": "mm"
+        },
+        {
+          "name": "notch_depth",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "notch_width",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        }
+      ],
+      "derived_parameters": [
+        {
+          "name": "notch_tip_radius",
+          "unit": "mm",
+          "expression": "0.5 * notch_width",
+          "exclusiveMinimum": 0
+        }
+      ],
+      "geometric_constraints": [
+        "notch_depth > 0.5 * notch_width",
+        "notch_depth < depth",
+        "notch_offset + 0.5 * notch_width < 0.5 * length",
+        "0.5 * notch_width - notch_offset < 0.5 * length"
+      ],
+      "figure": "figures/geometries/generated/notched_prism.svg"
+    },
+    "dogbone": {
+      "geometry_type_id": "GLOB-GEO0005",
+      "version": "1.0.0",
+      "parameters": [
+        {
+          "name": "length",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "dogbone_central_length",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "dogbone_central_width",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "dogbone_head_length",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "dogbone_thickness",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "transition_type",
+          "type": "string",
+          "required": false,
+          "enum": [
+            "linear_transition",
+            "curved_transition"
+          ],
+          "default": "curved_transition"
+        }
+      ],
+      "derived_parameters": [
+        {
+          "name": "dogbone_transition_length",
+          "unit": "mm",
+          "expression": "0.5 * (length - 2 * dogbone_head_length - dogbone_central_length)",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "dogbone_transition_width",
+          "unit": "mm",
+          "expression": "0.5 * (width - dogbone_central_width)",
+          "exclusiveMinimum": 0
+        }
+      ],
+      "geometric_constraints": [
+        "length > 2 * dogbone_head_length + dogbone_central_length",
+        "width > dogbone_central_width"
+      ],
+      "figure": "figures/geometries/generated/dogbone.svg"
+    },
+    "ell_shape": {
+      "geometry_type_id": "GLOB-GEO0006",
+      "version": "1.0.0",
+      "parameters": [
+        {
+          "name": "thickness",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "ell_length_1",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "ell_depth_1",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "ell_length_2",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "ell_depth_2",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        }
+      ],
+      "derived_parameters": [],
+      "geometric_constraints": [
+        "ell_length_2 < ell_length_1",
+        "ell_depth_2 < ell_depth_1"
+      ],
+      "figure": "figures/geometries/generated/ell_shape.svg"
+    },
+    "notched_cylinder": {
+      "geometry_type_id": "GLOB-GEO0007",
+      "version": "1.0.0",
+      "parameters": [
+        {
+          "name": "length",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "diameter",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "notch_depth",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        },
+        {
+          "name": "notch_width",
+          "type": "number",
+          "required": true,
+          "unit": "mm",
+          "exclusiveMinimum": 0
+        }
+      ],
+      "derived_parameters": [
+        {
+          "name": "notch_tip_radius",
+          "unit": "mm",
+          "expression": "0.5 * notch_width",
+          "exclusiveMinimum": 0
+        }
+      ],
+      "geometric_constraints": [
+        "notch_depth < 0.5 * diameter",
+        "notch_width < length",
+        "notch_depth > 0.5 * notch_width"
+      ],
+      "figure": "figures/geometries/generated/notched_cylinder.svg"
+    }
+  }
+}

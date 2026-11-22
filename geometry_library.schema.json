@@ -1,0 +1,612 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civita.network/schemas/geometry_library.schema.json",
+  "title": "CIVITA Geometry Library Schema",
+  "description": "Defines the structure of the CIVITA Geometry Library: specification metadata, global conventions, versioned geometry type definitions with independent numerical and categorical parameters, derived parameters, geometric constraints, local reference systems, and validation conventions. Relationships that JSON Schema cannot express, such as expression parsing, parameter references, default membership in enumerations, bound consistency, and figure-file existence, are checked by scripts/validate_geometry_library.mjs.",
+  "metadata": {
+    "id": "civita.common.geometry_library_schema",
+    "title": "CIVITA Geometry Library Schema",
+    "description": "Structural validation schema for the CIVITA Geometry Library.",
+    "type": "validation_schema",
+    "version": "1.0.0",
+    "status": "draft",
+    "repository": "https://github.com/civita-network/civita-schema"
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "metadata",
+    "library_name",
+    "version",
+    "description",
+    "global_conventions",
+    "geometries",
+    "validation_conventions"
+  ],
+  "properties": {
+    "metadata": {
+      "description": "Specification metadata following metadata.schema.json. The Geometry Library is a specification of type library.",
+      "allOf": [
+        {
+          "$ref": "metadata.schema.json"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "library"
+            }
+          }
+        }
+      ]
+    },
+    "library_name": {
+      "$ref": "#/$defs/identifier"
+    },
+    "version": {
+      "$ref": "#/$defs/semantic_version",
+      "description": "Library specification version. Mirrors metadata.version for compatibility; equality is checked by the semantic validator."
+    },
+    "description": {
+      "$ref": "#/$defs/nonempty_string"
+    },
+    "global_conventions": {
+      "$ref": "#/$defs/global_conventions"
+    },
+    "geometries": {
+      "type": "object",
+      "description": "Geometry type definitions keyed by geometry name. The set of geometry types is open; each key must equal the name of its definition (checked by the semantic validator).",
+      "minProperties": 1,
+      "propertyNames": {
+        "$ref": "#/$defs/identifier"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/geometry"
+      }
+    },
+    "validation_conventions": {
+      "$ref": "#/$defs/validation_conventions"
+    }
+  },
+  "$defs": {
+    "nonempty_string": {
+      "type": "string",
+      "minLength": 1
+    },
+    "identifier": {
+      "type": "string",
+      "description": "Machine-readable name in lowercase_with_underscores form.",
+      "pattern": "^[a-z][a-z0-9]*(_[a-z0-9]+)*$"
+    },
+    "semantic_version": {
+      "type": "string",
+      "description": "Version in MAJOR.MINOR.PATCH format.",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "geometry_type_id": {
+      "type": "string",
+      "description": "Global geometry type identifier.",
+      "pattern": "^GLOB-GEO[0-9]{4}$"
+    },
+    "expression": {
+      "type": "string",
+      "description": "Arithmetic expression in the CIVITA expression grammar (finite decimal literals, numerical independent parameter names, parentheses, binary + - * /). Only the character set is checked here; parsing and identifier resolution are performed by the semantic validator.",
+      "minLength": 1,
+      "pattern": "^[0-9A-Za-z_.+\\-*/() ]+$"
+    },
+    "coordinate": {
+      "description": "A coordinate given as a number or as an expression in the CIVITA expression grammar.",
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "$ref": "#/$defs/expression"
+        }
+      ]
+    },
+    "numerical_bounds": {
+      "type": "object",
+      "properties": {
+        "minimum": {
+          "type": "number"
+        },
+        "exclusiveMinimum": {
+          "type": "number"
+        },
+        "maximum": {
+          "type": "number"
+        },
+        "exclusiveMaximum": {
+          "type": "number"
+        }
+      }
+    },
+    "global_conventions": {
+      "type": "object",
+      "description": "Library-wide conventions. The listed fields are required; additional conventions are permitted as nonempty descriptive strings.",
+      "required": [
+        "coordinate_system_type",
+        "default_length_unit",
+        "naming_convention",
+        "geometry_type_identifier_pattern",
+        "figure_path_base"
+      ],
+      "properties": {
+        "coordinate_system_type": {
+          "description": "All local axes form a right-handed Cartesian system.",
+          "const": "right_handed_cartesian"
+        },
+        "default_length_unit": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "naming_convention": {
+          "const": "lowercase_with_underscores"
+        },
+        "geometry_type_identifier_pattern": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "figure_path_base": {
+          "$ref": "#/$defs/nonempty_string"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/nonempty_string"
+      }
+    },
+    "geometry": {
+      "type": "object",
+      "description": "One versioned geometry type definition.",
+      "additionalProperties": false,
+      "required": [
+        "geometry_type_id",
+        "name",
+        "version",
+        "display_name",
+        "description",
+        "reference_system",
+        "parameters"
+      ],
+      "properties": {
+        "geometry_type_id": {
+          "$ref": "#/$defs/geometry_type_id"
+        },
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "version": {
+          "$ref": "#/$defs/semantic_version"
+        },
+        "display_name": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "description": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "reference_system": {
+          "$ref": "#/$defs/reference_system"
+        },
+        "parameters": {
+          "type": "array",
+          "description": "Independent parameters supplied by a geometry instance. Name uniqueness is checked by the semantic validator.",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/parameter"
+          }
+        },
+        "derived_parameters": {
+          "type": "array",
+          "description": "Parameters computed from numerical independent parameters; never supplied by a geometry instance.",
+          "items": {
+            "$ref": "#/$defs/derived_parameter"
+          }
+        },
+        "geometric_constraints": {
+          "type": "array",
+          "description": "Compatibility conditions between numerical independent parameters.",
+          "items": {
+            "$ref": "#/$defs/geometric_constraint"
+          }
+        }
+      }
+    },
+    "reference_system": {
+      "type": "object",
+      "description": "Local right-handed coordinate system. Geometry-specific conventions use the explicitly defined fields below or, as an extension mechanism, additional fields whose names end in _convention: prose conventions are nonempty strings, and a structured convention must be a nonempty object and should receive an explicit definition here (as profile_convention has) when introduced.",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "figure",
+        "origin",
+        "x_axis",
+        "y_axis",
+        "z_axis"
+      ],
+      "properties": {
+        "type": {
+          "const": "right_handed_cartesian"
+        },
+        "figure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Repository-relative path of the authoritative SVG figure. Absolute paths, backslashes, and parent-directory segments are excluded.",
+              "pattern": "^[a-z0-9_-]+(/[a-z0-9_-]+)*\\.svg$"
+            }
+          }
+        },
+        "origin": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "x_axis": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "y_axis": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "z_axis": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "notes": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "notch_convention": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "profile_convention": {
+          "$ref": "#/$defs/profile_convention"
+        }
+      },
+      "patternProperties": {
+        "^[a-z][a-z0-9]*(_[a-z0-9]+)*_convention$": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "minProperties": 1
+            }
+          ]
+        }
+      }
+    },
+    "profile_convention": {
+      "type": "object",
+      "description": "Planar profile extruded along the normal axis. Vertex and corner coordinates are numbers or expressions. The semantic validator checks that the vertex list and corner keys match the declared plane and that the extrusion axis is normal to it.",
+      "additionalProperties": false,
+      "required": [
+        "plane",
+        "extrusion"
+      ],
+      "properties": {
+        "plane": {
+          "enum": [
+            "x-y",
+            "x-z",
+            "y-z"
+          ]
+        },
+        "reentrant_corner": {
+          "type": "object",
+          "minProperties": 2,
+          "maxProperties": 2,
+          "propertyNames": {
+            "enum": [
+              "x",
+              "y",
+              "z"
+            ]
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/coordinate"
+          }
+        },
+        "vertices_xy": {
+          "$ref": "#/$defs/profile_vertices"
+        },
+        "vertices_xz": {
+          "$ref": "#/$defs/profile_vertices"
+        },
+        "vertices_yz": {
+          "$ref": "#/$defs/profile_vertices"
+        },
+        "extrusion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "axis",
+            "direction",
+            "from",
+            "distance"
+          ],
+          "properties": {
+            "axis": {
+              "enum": [
+                "x",
+                "y",
+                "z"
+              ]
+            },
+            "direction": {
+              "enum": [
+                "positive",
+                "negative"
+              ]
+            },
+            "from": {
+              "$ref": "#/$defs/coordinate"
+            },
+            "distance": {
+              "$ref": "#/$defs/coordinate"
+            }
+          }
+        }
+      }
+    },
+    "profile_vertices": {
+      "type": "array",
+      "description": "Ordered profile vertices, each a pair of in-plane coordinates.",
+      "minItems": 3,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "$ref": "#/$defs/coordinate"
+        }
+      }
+    },
+    "parameter": {
+      "type": "object",
+      "description": "Independent parameter. The declared type selects the numerical or categorical definition.",
+      "required": [
+        "name",
+        "required",
+        "type",
+        "description"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "type": {
+          "enum": [
+            "number",
+            "string"
+          ]
+        },
+        "description": {
+          "$ref": "#/$defs/nonempty_string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "const": "number"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/numerical_parameter"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "const": "string"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/categorical_parameter"
+          }
+        }
+      ]
+    },
+    "numerical_parameter": {
+      "type": "object",
+      "description": "Numerical independent parameter with a unit and optional bounds. Categorical enumerations are not permitted.",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "required",
+        "type",
+        "unit",
+        "description"
+      ],
+      "$ref": "#/$defs/numerical_bounds",
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "type": {
+          "const": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "description": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "default": {
+          "type": "number"
+        },
+        "minimum": true,
+        "exclusiveMinimum": true,
+        "maximum": true,
+        "exclusiveMaximum": true
+      }
+    },
+    "categorical_parameter": {
+      "type": "object",
+      "description": "Categorical independent parameter with an enumeration of admissible string values. Units and numerical bounds are not permitted. Membership of the default in enum is checked by the semantic validator.",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "required",
+        "type",
+        "enum",
+        "description"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "type": {
+          "const": "string"
+        },
+        "enum": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        },
+        "default": {
+          "type": "string"
+        },
+        "description": {
+          "$ref": "#/$defs/nonempty_string"
+        }
+      }
+    },
+    "derived_parameter": {
+      "type": "object",
+      "description": "Numerical parameter computed from an expression over numerical independent parameters.",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "type",
+        "unit",
+        "description",
+        "expression"
+      ],
+      "$ref": "#/$defs/numerical_bounds",
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "const": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "description": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "minimum": true,
+        "exclusiveMinimum": true,
+        "maximum": true,
+        "exclusiveMaximum": true
+      }
+    },
+    "geometric_constraint": {
+      "type": "object",
+      "description": "Comparison between two expressions over numerical independent parameters.",
+      "additionalProperties": false,
+      "required": [
+        "left",
+        "operator",
+        "right"
+      ],
+      "properties": {
+        "left": {
+          "$ref": "#/$defs/expression"
+        },
+        "operator": {
+          "enum": [
+            ">",
+            ">=",
+            "<"
+          ]
+        },
+        "right": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "validation_conventions": {
+      "type": "object",
+      "description": "Normative prose describing how geometry instances are validated. The listed conventions are required; their wording is not fixed by this schema. Additional conventions are permitted as nonempty strings.",
+      "required": [
+        "geometry_type_resolution",
+        "parameters",
+        "parameter_types",
+        "numeric_parameters",
+        "categorical_parameters",
+        "optional_parameters_and_defaults",
+        "positive_dimensions",
+        "geometric_constraints",
+        "derived_parameters",
+        "expression_syntax"
+      ],
+      "properties": {
+        "geometry_type_resolution": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "parameters": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "parameter_types": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "numeric_parameters": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "categorical_parameters": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "optional_parameters_and_defaults": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "positive_dimensions": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "geometric_constraints": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "derived_parameters": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "expression_syntax": {
+          "$ref": "#/$defs/nonempty_string"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/nonempty_string"
+      }
+    }
+  }
+}

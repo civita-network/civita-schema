@@ -63,7 +63,33 @@ A geometry definition's `parameters` array lists the independent inputs supplied
 
 Arithmetic expressions use finite decimal literals, names of numerical independent parameters in the same definition, parentheses, and the binary operators `+`, `-`, `*`, and `/`. Evaluate parentheses first, then multiplication and division, then addition and subtraction. Operators at the same precedence group from left to right. Constraint entries compare the `left` and `right` expressions using their `operator`. The `>` comparison is strict. Reject division by zero and nonfinite results. An application should use a restricted arithmetic parser for these expressions.
 
-The library specifies these rules. Applications still need to implement the compatibility and derived-value checks.
+The library specifies these rules. [`scripts/geometry_library_validation.mjs`](scripts/geometry_library_validation.mjs) provides a reference implementation that applications can reuse or follow.
+
+### Validation
+
+The library is validated in three layers:
+
+1. **Structural.** [`geometry_library.schema.json`](geometry_library.schema.json) (JSON Schema Draft 2020-12) defines the shape of `geometry_library.json`. It covers required fields, identifier and version patterns, metadata (through [`metadata.schema.json`](metadata.schema.json), with `type` fixed to `library`), and numerical parameters (`type: number`, a `unit`, optional bounds, no `enum`). It also covers categorical parameters (`type: string`, a nonempty `enum` of unique lowercase_with_underscores values, an optional string `default`, no unit or bounds), derived parameters, constraint operators (`>`, `>=`, `<`), and the reference-system fields, including the structured `profile_convention`. Additional geometry-specific reference-system conventions must use names ending in `_convention`. The set of geometry types is open.
+2. **Semantic.** Relationships that JSON Schema cannot express are checked by the validator:
+   - each `geometries` key matches its `name`, and identifiers and names are unique;
+   - parameter names are unique, and derived names do not repeat independent ones;
+   - numerical bounds are consistent, and each `default` matches its type, lies in its `enum` or bounds, and appears only on optional parameters;
+   - every expression parses and references only numerical independent parameters;
+   - profile vertices and the extrusion axis match the declared plane.
+3. **Figures.** The validator checks that each geometry's SVG, PDF, and TikZ source, and the shared TikZ style, exist inside the repository and are nonempty. File locations follow `tikz_implementation` in the figure design standard.
+
+Run the validator and the tests from the repository root (Node.js 20 or later, with no network access needed):
+
+```powershell
+node scripts/validate_geometry_library.mjs
+node --test tests/geometry_library_validation.test.mjs
+```
+
+The validator reports each stage as `PASSED`, `FAILED`, or `SKIPPED` and exits with status 1 when a stage fails. Structural validation requires [Ajv](https://ajv.js.org/) 8 (`ajv/dist/2020`, plus `ajv-formats` for the `uri` format). The repository has no installed dependencies. If Ajv cannot be resolved, set `CIVITA_AJV_DIR` to a local directory where it is installed; otherwise the structural stage and its tests are reported as skipped. Use `--strict` to treat a skipped stage as a failure.
+
+`validateGeometryInstance(library, geometry_type_id, geometry_type_version, parameters)` validates one instance against the exact resolved definition. It rejects unresolved types or versions, missing required parameters, unknown or derived parameter names, wrong types, nonfinite numbers, out-of-bounds values, and values outside an `enum`. It then evaluates the geometric constraints, calculates the derived parameters, and checks their bounds. It returns `valid`, `errors`, `resolved_parameters` (submitted values plus the defaults of omitted optional parameters, such as `transition_type: "curved_transition"` for a dogbone), and `derived_parameters`. Defaults are not inserted into the submitted record. All rules are read from the library entry, so new geometry types that follow these conventions need no code changes.
+
+Limitations: the expression parser accepts only decimal literals of the form `12` or `12.5`. Leading-dot and exponent forms are rejected, as are unary operators. The validator does not prove that a geometry's constraints can be satisfied together, and division by an expression that evaluates to zero is detected only for a specific instance. The prose in `validation_conventions` and `global_conventions` is checked for presence, not wording. The tests compare the current definitions with [`tests/fixtures/geometry_library_reference.json`](tests/fixtures/geometry_library_reference.json). Update that snapshot deliberately whenever a definition is intentionally revised.
 
 ## License and Copyright
 
