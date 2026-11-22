@@ -239,7 +239,7 @@ function boundsAreConsistent(definition) {
 // ---------------------------------------------------------------------------
 
 /**
- * Load Ajv (Draft 2020-12) and, if present, ajv-formats.
+ * Load Ajv (Draft 2020-12) and its required ajv-formats plugin.
  * Resolution order: normal module resolution from this repository, then the
  * directory named by the CIVITA_AJV_DIR environment variable (a directory that
  * contains, or is, a node_modules folder with ajv installed).
@@ -254,37 +254,39 @@ export async function loadAjv(env = process.env) {
     candidates.push({ label: `CIVITA_AJV_DIR=${dir}`, base: path.join(dir, "..", "package.json") });
   }
   for (const { label, base } of candidates) {
+    let dependency = "Ajv (Draft 2020-12)";
     try {
       const require = createRequire(base);
       const ajvPath = require.resolve("ajv/dist/2020.js");
       const ajvModule = await import(pathToFileURL(ajvPath).href);
       const Ajv2020 = ajvModule.default?.default ?? ajvModule.default ?? ajvModule.Ajv2020;
-      let addFormats = null;
-      try {
-        const formatsModule = await import(pathToFileURL(require.resolve("ajv-formats")).href);
-        addFormats = formatsModule.default?.default ?? formatsModule.default;
-      } catch { /* formats are optional */ }
+      if (typeof Ajv2020 !== "function") throw new Error("Draft 2020-12 constructor not exported");
       const version = JSON.parse(readFileSync(require.resolve("ajv/package.json"), "utf8")).version;
-      return { Ajv2020, addFormats, source: `${label} (ajv ${version}${addFormats ? ", ajv-formats" : ""})` };
+      dependency = "ajv-formats";
+      const formatsModule = await import(pathToFileURL(require.resolve("ajv-formats")).href);
+      const addFormats = formatsModule.default?.default ?? formatsModule.default;
+      if (typeof addFormats !== "function") throw new Error("format plugin not exported");
+      return { Ajv2020, addFormats, source: `${label} (ajv ${version}, ajv-formats)` };
     } catch (error) {
-      attempts.push(`${label}: ${error.code ?? error.message}`);
+      attempts.push(`${label}: ${dependency}: ${error.code ?? error.message}`);
     }
   }
-  return { unavailable: `Ajv (Draft 2020-12) not found. Tried ${attempts.join("; ")}. Set CIVITA_AJV_DIR to a local directory with ajv installed.` };
+  return { unavailable: `Structural validation dependencies unavailable. Tried ${attempts.join("; ")}. Run npm ci to install Ajv and ajv-formats.` };
 }
 
 /** Compile the Geometry Library schema with Ajv. Validates the schema itself against the Draft 2020-12 meta-schema. */
 export function compileLibrarySchema(ajvBundle, root = REPOSITORY_ROOT) {
   const { Ajv2020, addFormats } = ajvBundle;
+  if (typeof addFormats !== "function") throw new Error("ajv-formats is required for structural validation");
   // allowMatchingProperties: named reference-system conventions (for example
   // notch_convention) intentionally also satisfy the *_convention pattern rule.
-  const ajv = new Ajv2020({ allErrors: true, strict: true, allowMatchingProperties: true, validateFormats: Boolean(addFormats) });
-  if (addFormats) addFormats(ajv);
+  const ajv = new Ajv2020({ allErrors: true, strict: true, allowMatchingProperties: true, validateFormats: true });
+  addFormats(ajv);
   ajv.addKeyword({ keyword: "metadata", schemaType: "object" }); // CIVITA annotation on schema documents
   const metadataSchema = JSON.parse(readFileSync(path.join(root, "metadata.schema.json"), "utf8"));
   const librarySchema = JSON.parse(readFileSync(path.join(root, "geometry_library.schema.json"), "utf8"));
   ajv.addSchema(metadataSchema);
-  return { validate: ajv.compile(librarySchema), formatsValidated: Boolean(addFormats) };
+  return { validate: ajv.compile(librarySchema), formatsValidated: true };
 }
 
 export function validateLibraryStructure(compiled, library) {

@@ -61,7 +61,9 @@ The figures in `civita-documentation` are legacy copies. Stage 2 will synchroniz
 
 A geometry definition's `parameters` array lists the independent inputs supplied by a geometry instance. Resolve the geometry by `geometry_type_id` and `geometry_type_version`, then validate the inputs against their declared types. Independent parameters are numerical or categorical: apply numerical bounds to numerical parameters, check categorical values against their `enum`, and use the declared `default` for an omitted optional parameter. Apply any `geometric_constraints` and calculate `derived_parameters` from the inputs. Check each derived value against its own bounds. Dogbone transition dimensions are derived outputs.
 
-Arithmetic expressions use finite decimal literals, names of numerical independent parameters in the same definition, parentheses, and the binary operators `+`, `-`, `*`, and `/`. Evaluate parentheses first, then multiplication and division, then addition and subtraction. Operators at the same precedence group from left to right. Constraint entries compare the `left` and `right` expressions using their `operator`. The `>` comparison is strict. Reject division by zero and nonfinite results. An application should use a restricted arithmetic parser for these expressions.
+Arithmetic expressions accept finite decimal literals matching `[0-9]+(\.[0-9]+)?`, names of numerical independent parameters in the same definition, parentheses, and the binary operators `+`, `-`, `*`, and `/`. Examples include `12`, `12.5`, `0.5 * notch_width`, and `0.5 * (length - 2 * dogbone_head_length)`. Spaces between tokens are allowed. Leading or trailing decimal points, scientific notation, unary signs, exponentiation, and function calls are rejected, including `.5`, `12.`, `1e5`, `-2`, `notch_width ** 2`, and `sqrt(diameter)`.
+
+Evaluate parentheses first, then multiplication and division, then addition and subtraction. Operators at the same precedence group from left to right. Constraint entries compare the `left` and `right` expressions using their `operator` (`>`, `>=`, or `<`). Reject division by zero and nonfinite results. The reference parser evaluates the restricted grammar directly.
 
 The library specifies these rules. [`scripts/geometry_library_validation.mjs`](scripts/geometry_library_validation.mjs) provides a reference implementation that applications can reuse or follow.
 
@@ -78,18 +80,23 @@ The library is validated in three layers:
    - profile vertices and the extrusion axis match the declared plane.
 3. **Figures.** The validator checks that each geometry's SVG, PDF, and TikZ source, and the shared TikZ style, exist inside the repository and are nonempty. File locations follow `tikz_implementation` in the figure design standard.
 
-Run the validator and the tests from the repository root (Node.js 20 or later, with no network access needed):
+Run the validator and tests from the repository root with Node.js 24 LTS:
 
-```powershell
-node scripts/validate_geometry_library.mjs
-node --test tests/geometry_library_validation.test.mjs
+```bash
+npm ci
+npm run validate:geometry
+npm run test:geometry
 ```
 
-The validator reports each stage as `PASSED`, `FAILED`, or `SKIPPED` and exits with status 1 when a stage fails. Structural validation requires [Ajv](https://ajv.js.org/) 8 (`ajv/dist/2020`, plus `ajv-formats` for the `uri` format). The repository has no installed dependencies. If Ajv cannot be resolved, set `CIVITA_AJV_DIR` to a local directory where it is installed; otherwise the structural stage and its tests are reported as skipped. Use `--strict` to treat a skipped stage as a failure.
+The lockfile pins the development dependencies [Ajv](https://ajv.js.org/) and `ajv-formats`. The standard command runs in strict mode and requires JSON parsing, structural validation with format checks, semantic validation, and figure-reference validation to pass. A failed or unavailable stage yields exit status 1. The test suite requires both locally resolvable dependencies and always runs the structural cases. GitHub Actions runs the same commands for relevant changes pushed to `main` or proposed in pull requests targeting `main`, and supports manual runs.
 
 `validateGeometryInstance(library, geometry_type_id, geometry_type_version, parameters)` validates one instance against the exact resolved definition. It rejects unresolved types or versions, missing required parameters, unknown or derived parameter names, wrong types, nonfinite numbers, out-of-bounds values, and values outside an `enum`. It then evaluates the geometric constraints, calculates the derived parameters, and checks their bounds. It returns `valid`, `errors`, `resolved_parameters` (submitted values plus the defaults of omitted optional parameters, such as `transition_type: "curved_transition"` for a dogbone), and `derived_parameters`. Defaults are not inserted into the submitted record. All rules are read from the library entry, so new geometry types that follow these conventions need no code changes.
 
-Limitations: the expression parser accepts only decimal literals of the form `12` or `12.5`. Leading-dot and exponent forms are rejected, as are unary operators. The validator does not prove that a geometry's constraints can be satisfied together, and division by an expression that evaluates to zero is detected only for a specific instance. The prose in `validation_conventions` and `global_conventions` is checked for presence, not wording. The tests compare the current definitions with [`tests/fixtures/geometry_library_reference.json`](tests/fixtures/geometry_library_reference.json). Update that snapshot deliberately whenever a definition is intentionally revised.
+The validator does not prove that a geometry's constraints can be satisfied together. Division by an expression that evaluates to zero is detected for specific instances. The validator checks that the prose in `validation_conventions` and `global_conventions` is present.
+
+#### Scientific regression snapshot
+
+The tests compare the seven approved definitions with [`tests/fixtures/geometry_library_reference.json`](tests/fixtures/geometry_library_reference.json). Routine validation must never update this snapshot automatically. A proposed change to an approved definition requires scientific review. After approval, the snapshot may be deliberately updated under the existing CIVITA geometry-type versioning rules. The library-wide version identifies the specification as a whole and is managed separately. Published interpretations must remain reproducible from the immutable commits or releases that contain the corresponding definitions and figures.
 
 ## License and Copyright
 

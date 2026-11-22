@@ -1,0 +1,15 @@
+{
+  "name": "civita-schema",
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "validate:geometry": "node scripts/validate_geometry_library.mjs --strict",
+    "test:geometry": "node --test tests/geometry_library_validation.test.mjs"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1"
+  }
+}
