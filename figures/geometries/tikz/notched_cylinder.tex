@@ -1,0 +1,262 @@
+% GLOB-GEO0007 v1.0.0. Geometry and projections follow the CIVITA library,
+% notched_cylinder.png, and the geometry figure design standard.
+% Build from this directory with SOURCE_DATE_EPOCH=0 and
+% pdflatex -halt-on-error -no-shell-escape notched_cylinder.tex. Convert the
+% PDF with pdftocairo -svg notched_cylinder.pdf notched_cylinder.svg.
+%
+% Definition: right circular cylinder x^2 + y^2 <= (diameter/2)^2,
+% 0 <= z <= length, with O at the center of the reference end face z = 0 and
+% the z axis on the cylinder axis. A circumferential notch is centered at
+% z_c = length/2 and spans z_c -/+ notch_width/2 axially. Its depth is radial,
+% from the outer surface to the deepest point, so the root radius is
+% R_root = diameter/2 - notch_depth.
+%
+% Four independent parameters (length, diameter, notch_depth, notch_width).
+% In an axial section the notch has parallel sides ending in a semicircle;
+% notch_tip_radius = 0.5 * notch_width is a derived parameter of the library.
+% notch_depth includes the semicircular tip, so the straight-sided radial
+% portion is notch_depth - notch_width/2, which the library requires to be
+% strictly positive.
+%
+% The reference draws +z downward; the design standard projects +z upward, so
+% the same right-handed frame appears rotated, with z = 0 at the bottom.
+\documentclass[border=1pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tikz}
+\usetikzlibrary{3d,calc}
+\input{civita_geometry_style.tex}
+\pdfinfoomitdate=1
+
+% Illustrative construction dimensions in mm. All printed labels are symbolic.
+\newcommand{\NCLength}{160}      % length
+\newcommand{\NCDiameter}{80}     % diameter
+\newcommand{\NCNotchDepth}{18}   % notch_depth (radial)
+\newcommand{\NCNotchWidth}{10}   % notch_width (axial)
+
+% Derived parameter of the library: notch_tip_radius = 0.5 * notch_width.
+\pgfmathsetmacro{\NCTipRadius}{0.5*\NCNotchWidth}
+% Derived construction values (not parameters of the library).
+\pgfmathsetmacro{\NCR}{\NCDiameter/2}                   % outer radius
+\pgfmathsetmacro{\NCRroot}{\NCR-\NCNotchDepth}          % root radius
+\pgfmathsetmacro{\NCRt}{\NCRroot+\NCTipRadius}          % tip center radius
+\pgfmathsetmacro{\NCzc}{\NCLength/2}                    % notch center
+\pgfmathsetmacro{\NCzm}{\NCzc-\NCNotchWidth/2}          % lower notch wall
+\pgfmathsetmacro{\NCzp}{\NCzc+\NCNotchWidth/2}          % upper notch wall
+
+% Constraints of geometry_library.json: strict positivity of the four
+% independent parameters and the three geometric constraints.
+\newcommand{\NCRequire}[2]{%
+  \pgfmathparse{(#1)?1:0}%
+  \ifnum\pgfmathresult=0
+    \PackageError{civita-notched-cylinder}{Violated constraint: #2}{Check the parameter values.}%
+  \fi}
+\NCRequire{\NCLength>0 && \NCDiameter>0 && \NCNotchDepth>0 && \NCNotchWidth>0}{length, diameter, notch_depth, notch_width > 0}
+\NCRequire{\NCNotchDepth<0.5*\NCDiameter}{notch_depth < 0.5 * diameter (positive root radius)}
+\NCRequire{\NCNotchWidth<\NCLength}{notch_width < length}
+\NCRequire{\NCNotchDepth>0.5*\NCNotchWidth}{notch_depth > 0.5 * notch_width (positive straight-sided portion)}
+
+% Cubic arc about the tip center, in the meridian half-plane with radial unit
+% vector (#1,#2,0): center radius #3, polar angles #4 -> #5 measured in the
+% (radial, z) plane, control length (4/3) tan((b-a)/4) r.
+\newcommand{\NCArc}[5]{%
+  ({#1*(#3+\NCTipRadius*cos(#4))},{#2*(#3+\NCTipRadius*cos(#4))},{\NCzc+\NCTipRadius*sin(#4)})
+  .. controls
+  ({#1*(#3+\NCTipRadius*(cos(#4)-4/3*tan((#5-#4)/4)*sin(#4)))},
+   {#2*(#3+\NCTipRadius*(cos(#4)-4/3*tan((#5-#4)/4)*sin(#4)))},
+   {\NCzc+\NCTipRadius*(sin(#4)+4/3*tan((#5-#4)/4)*cos(#4))})
+  and
+  ({#1*(#3+\NCTipRadius*(cos(#5)+4/3*tan((#5-#4)/4)*sin(#5)))},
+   {#2*(#3+\NCTipRadius*(cos(#5)+4/3*tan((#5-#4)/4)*sin(#5)))},
+   {\NCzc+\NCTipRadius*(sin(#5)-4/3*tan((#5-#4)/4)*cos(#5))})
+  .. ({#1*(#3+\NCTipRadius*cos(#5))},{#2*(#3+\NCTipRadius*cos(#5))},{\NCzc+\NCTipRadius*sin(#5)})}
+% Semicircular tip contour at radial direction (#1,#2), from the lower wall
+% through the deepest point to the upper wall.
+\newcommand{\NCTip}[2]{\NCArc{#1}{#2}{\NCRt}{270}{180} -- \NCArc{#1}{#2}{\NCRt}{180}{90}}
+\newcommand{\NCTipReversed}[2]{\NCArc{#1}{#2}{\NCRt}{90}{180} -- \NCArc{#1}{#2}{\NCRt}{180}{270}}
+% Axial section of the notched cylinder in the plane spanned by (#1,#2,0)
+% and z: the meridian profile on both sides of the axis.
+\newcommand{\NCOutline}[2]{%
+  ({-#1*\NCR},{-#2*\NCR},0) -- ({#1*\NCR},{#2*\NCR},0) -- ({#1*\NCR},{#2*\NCR},\NCzm)
+  -- \NCTip{#1}{#2} -- ({#1*\NCR},{#2*\NCR},\NCzp) -- ({#1*\NCR},{#2*\NCR},\NCLength)
+  -- ({-#1*\NCR},{-#2*\NCR},\NCLength) -- ({-#1*\NCR},{-#2*\NCR},\NCzp)
+  -- \NCTipReversed{-#1}{-#2} -- ({-#1*\NCR},{-#2*\NCR},\NCzm) -- cycle}
+% Radius of the notch neck at height z (lower wall to upper wall).
+\newcommand{\NCNeckRadius}[1]{\NCRt-sqrt(max(0,\NCTipRadius^2-(#1-\NCzc)^2))}
+
+\colorlet{NCNotchSurface}{CivitaSurface!78!CivitaGeometry}
+
+\newcommand{\NCOrthoScale}{.60}
+\newcommand{\NCIsoScale}{.54}
+\pgfmathsetmacro{\NCIsoHorizontal}{\NCIsoScale/sqrt(2)}
+\pgfmathsetmacro{\NCIsoDown}{\NCIsoScale/sqrt(6)}
+\pgfmathsetmacro{\NCIsoUp}{2*\NCIsoDown}
+\newcommand{\NCAxisLength}{28}
+\newcommand{\NCCenterOverrun}{10}
+\pgfmathsetmacro{\NCIsoAxisLength}{1.4*\NCR}
+\pgfmathsetmacro{\NCIsoCenterTop}{\NCLength+\NCR}
+\newcommand{\NCNeckSamples}{24}
+
+% Local points shared by the orthographic projections.
+\newcommand{\NCPoints}{%
+  \coordinate (nc-o) at (0,0,0);
+  \coordinate (center-low) at (0,0,-\NCCenterOverrun);
+  \coordinate (center-high) at (0,0,\NCLength+\NCCenterOverrun);
+  \coordinate (axis-x) at (\NCAxisLength,0,0);
+  \coordinate (axis-y) at (0,\NCAxisLength,0);
+  \coordinate (axis-z) at (0,0,\NCAxisLength);
+}
+
+\begin{document}
+\begin{tikzpicture}[civita/figure]
+  \CivitaCanvas
+
+  \begin{CivitaPanel}{1}{1}{(a) 3D View}
+    % View along (-1,-1,-1), with positive z projected upward. A ray toward
+    % the viewer always moves toward larger z, so material can only be
+    % hidden by material above it. The specimen is therefore painted in
+    % ascending z: lower cylinder, notch neck, upper cylinder. Circles are
+    % drawn in their own x-y planes and projected by the same affine map;
+    % the side contours of the neck lie in the meridian planes at polar
+    % angles 135 and -45 degrees, where the projected circles reach their
+    % horizontal extremes.
+    \begin{scope}[shift={(90,27)},x={(-\NCIsoHorizontal pt,-\NCIsoDown pt)},
+      y={(\NCIsoHorizontal pt,-\NCIsoDown pt)},z={(0pt,\NCIsoUp pt)}]
+      \NCPoints
+      % Lower cylinder, 0 <= z <= z_-.
+      \path[civita/front] (0,0,0) circle[radius=\NCR];
+      \path[civita/front] ({\NCR*cos(135)},{\NCR*sin(135)},0) -- ({\NCR*cos(-45)},{\NCR*sin(-45)},0)
+        -- ({\NCR*cos(-45)},{\NCR*sin(-45)},\NCzm) -- ({\NCR*cos(135)},{\NCR*sin(135)},\NCzm) -- cycle;
+      \begin{scope}[canvas is xy plane at z=0]
+        \draw[civita/hidden] (135:\NCR) arc[start angle=135,end angle=315,radius=\NCR];
+        \draw[civita/edge] (-45:\NCR) arc[start angle=-45,end angle=135,radius=\NCR];
+      \end{scope}
+      \draw[civita/edge] ({\NCR*cos(135)},{\NCR*sin(135)},0) -- ({\NCR*cos(135)},{\NCR*sin(135)},\NCzm)
+        ({\NCR*cos(-45)},{\NCR*sin(-45)},0) -- ({\NCR*cos(-45)},{\NCR*sin(-45)},\NCzm);
+      % Lower notch wall z = z_- (an annulus facing +z).
+      \path[civita/end,civita/edge] (0,0,\NCzm) circle[radius=\NCR];
+      % Notch neck, z_- <= z <= z_+: union of its projected circles, then its
+      % two side contours (the semicircular tip seen edge-on).
+      \foreach \i in {0,...,\NCNeckSamples}{
+        \pgfmathsetmacro{\NCz}{\NCzm+\i*\NCNotchWidth/\NCNeckSamples}
+        \pgfmathsetmacro{\NCr}{\NCNeckRadius{\NCz}}
+        \path[fill=NCNotchSurface] (0,0,\NCz) circle[radius=\NCr];
+      }
+      \draw[civita/edge] \NCTip{-0.70711}{0.70711};
+      \draw[civita/edge] \NCTip{0.70711}{-0.70711};
+      % Upper cylinder, z_+ <= z <= length.
+      \path[civita/front] (0,0,\NCzp) circle[radius=\NCR];
+      \path[civita/front] ({\NCR*cos(135)},{\NCR*sin(135)},\NCzp) -- ({\NCR*cos(-45)},{\NCR*sin(-45)},\NCzp)
+        -- ({\NCR*cos(-45)},{\NCR*sin(-45)},\NCLength) -- ({\NCR*cos(135)},{\NCR*sin(135)},\NCLength) -- cycle;
+      \begin{scope}[canvas is xy plane at z=\NCzp]
+        \draw[civita/edge] (-45:\NCR) arc[start angle=-45,end angle=135,radius=\NCR];
+      \end{scope}
+      \path[civita/end,civita/edge] (0,0,\NCLength) circle[radius=\NCR];
+      \draw[civita/edge] ({\NCR*cos(135)},{\NCR*sin(135)},\NCzp) -- ({\NCR*cos(135)},{\NCR*sin(135)},\NCLength)
+        ({\NCR*cos(-45)},{\NCR*sin(-45)},\NCzp) -- ({\NCR*cos(-45)},{\NCR*sin(-45)},\NCLength);
+      % Hidden rear halves of the two notch rims, where the upper cylinder
+      % covers them, so the groove reads as continuous around the axis.
+      \begin{scope}
+        % (band traced counterclockwise, like the circle, so the nonzero
+        % rule yields their union)
+        \clip (0,0,\NCzp) circle[radius=\NCR]
+          ({\NCR*cos(135)},{\NCR*sin(135)},\NCzp) -- ({\NCR*cos(135)},{\NCR*sin(135)},\NCLength)
+          -- ({\NCR*cos(-45)},{\NCR*sin(-45)},\NCLength) -- ({\NCR*cos(-45)},{\NCR*sin(-45)},\NCzp) -- cycle;
+        \begin{scope}[canvas is xy plane at z=\NCzm]
+          \draw[civita/hidden] (135:\NCR) arc[start angle=135,end angle=315,radius=\NCR];
+        \end{scope}
+        \begin{scope}[canvas is xy plane at z=\NCzp]
+          \draw[civita/hidden] (135:\NCR) arc[start angle=135,end angle=315,radius=\NCR];
+        \end{scope}
+      \end{scope}
+      \coordinate (iso-x) at (\NCIsoAxisLength,0,0);
+      \coordinate (iso-y) at (0,\NCIsoAxisLength,0);
+      \coordinate (iso-center-high) at (0,0,\NCIsoCenterTop);
+      \draw[civita/centerline] (axis-z) -- (iso-center-high);
+    \end{scope}
+    \CivitaAxis{nc-o}{iso-x}{north east}{x}
+    \CivitaAxis{nc-o}{iso-y}{north west}{y}
+    \CivitaAxis{nc-o}{axis-z}{south west}{z}
+    \CivitaOrigin[yshift=-3pt]{nc-o}{north}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{1}{2}{(b) x-y View}
+    % View along -z onto the end face z = length. The notch root circle at
+    % mid-length is hidden.
+    \begin{scope}[shift={(90,70)},x={(\NCOrthoScale pt,0pt)},
+      y={(0pt,\NCOrthoScale pt)},z={(0pt,0pt)}]
+      \NCPoints
+      \coordinate (xy-x-minus) at (-\NCR,0,0);
+      \coordinate (xy-x-plus) at (\NCR,0,0);
+      \draw[civita/centerline] ({-\NCR-\NCCenterOverrun},0) -- (-\NCR,0) (\NCR,0) -- ({\NCR+\NCCenterOverrun},0);
+      \draw[civita/centerline] (0,{-\NCR-\NCCenterOverrun}) -- (0,-\NCR) (axis-y) -- (0,{\NCR+\NCCenterOverrun});
+      \draw[civita/hidden] (nc-o) circle[radius=\NCRroot];
+      \draw[civita/edge] (nc-o) circle[radius=\NCR];
+    \end{scope}
+    \CivitaHorizontalDimension{xy-x-minus}{xy-x-plus}{36}{\CivitaParameter{diameter}}
+    \CivitaAxis{nc-o}{axis-x}{south west}{x}
+    \CivitaAxis{nc-o}{axis-y}{west}{y}
+    \CivitaOrigin{nc-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{1}{(c) x-z View}
+    % View along +y. Axial section profile on both sides of the axis; the
+    % notch rims at z_- and z_+ project as full-width lines.
+    \begin{scope}[shift={(90,16)},x={(\NCOrthoScale pt,0pt)},
+      y={(0pt,0pt)},z={(0pt,\NCOrthoScale pt)}]
+      \NCPoints
+      \draw[civita/centerline] (center-low) -- (center-high);
+      \draw[civita/edge] \NCOutline{1}{0};
+      \draw[civita/edge] (-\NCR,0,\NCzm) -- (\NCR,0,\NCzm) (-\NCR,0,\NCzp) -- (\NCR,0,\NCzp);
+      \coordinate (xz-root) at (\NCRroot,0,\NCzc);
+      \coordinate (xz-surface) at (\NCR,0,\NCzc);
+      \coordinate (xz-rim-lo) at (\NCR,0,\NCzm);
+      \coordinate (xz-rim-hi) at (\NCR,0,\NCzp);
+      \coordinate (xz-left-lo) at (-\NCR,0,\NCzm);
+      \coordinate (xz-left-hi) at (-\NCR,0,\NCzp);
+    \end{scope}
+    % notch_width: axial, at the notch on the -x side; arrows outside.
+    \coordinate (xz-w-col) at ([xshift=-8pt]xz-left-lo);
+    \draw[civita/dimension extension] (xz-left-lo) -- (xz-w-col |- xz-left-lo);
+    \draw[civita/dimension extension] (xz-left-hi) -- (xz-w-col |- xz-left-hi);
+    \draw[civita/extension] ([yshift=-7pt]xz-w-col |- xz-left-lo) -- ([yshift=7pt]xz-w-col |- xz-left-hi);
+    \draw[civita/dimension,arrows=-CivitaArrow] ([yshift=-7pt]xz-w-col |- xz-left-lo) -- (xz-w-col |- xz-left-lo);
+    \draw[civita/dimension,arrows=-CivitaArrow] ([yshift=7pt]xz-w-col |- xz-left-hi) -- (xz-w-col |- xz-left-hi);
+    \node[civita/label,anchor=east] at ([xshift=-2pt]$(xz-w-col |- xz-left-lo)!.5!(xz-w-col |- xz-left-hi)$)
+      {\CivitaParameter{notch_width}};
+    % notch_depth: radial, from the original outer surface (thin reference
+    % line across the opening) to the deepest point of the tip.
+    \draw[civita/extension] ([yshift=-2pt]xz-rim-lo) -- ([yshift=2pt]xz-rim-hi);
+    \draw[civita/dimension] (xz-root) -- (xz-surface);
+    \node[civita/label,anchor=west] at ([xshift=2pt]xz-surface) {\CivitaParameter{notch_depth}};
+    \CivitaAxis{nc-o}{axis-x}{south west}{x}
+    \CivitaAxis{nc-o}{axis-z}{west}{z}
+    \CivitaOrigin[xshift=-1.5pt]{nc-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{2}{(d) y-z View}
+    % View along -x. Same axisymmetric profile, same scale as (c).
+    \begin{scope}[shift={(84,16)},x={(0pt,0pt)},
+      y={(\NCOrthoScale pt,0pt)},z={(0pt,\NCOrthoScale pt)}]
+      \NCPoints
+      \draw[civita/centerline] (center-low) -- (center-high);
+      \draw[civita/edge] \NCOutline{0}{1};
+      \draw[civita/edge] (0,-\NCR,\NCzm) -- (0,\NCR,\NCzm) (0,-\NCR,\NCzp) -- (0,\NCR,\NCzp);
+      \coordinate (yz-left) at (0,-\NCR,0);
+      \coordinate (yz-left-top) at (0,-\NCR,\NCLength);
+      \coordinate (yz-tip) at (0,\NCRroot,\NCzc);
+      \coordinate (yz-out) at (0,\NCR,\NCzc);
+    \end{scope}
+    \CivitaVerticalDimension{yz-left}{yz-left-top}{47}{left=1pt,rotate=90,anchor=south}{\CivitaParameter{length}}
+    % Derived tip radius: single leader through the tip center to the arc,
+    % annotated with the library relation in smaller, secondary type.
+    \draw[civita/dimension,arrows=-CivitaArrow] ([xshift=6pt]yz-out) -- (yz-tip);
+    \node[civita/label,font=\sffamily\fontsize{7}{8}\selectfont,align=left,anchor=west]
+      at ([xshift=6.5pt]yz-out)
+      {\CivitaParameter{notch_width} =\\ 2\,\CivitaParameter{notch_tip_radius}};
+    \CivitaAxis{nc-o}{axis-y}{south west}{y}
+    \CivitaAxis{nc-o}{axis-z}{west}{z}
+    \CivitaOrigin[xshift=-1.5pt]{nc-o}{north east}
+  \end{CivitaPanel}
+\end{tikzpicture}
+\end{document}
