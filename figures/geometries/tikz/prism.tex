@@ -1,0 +1,107 @@
+% GLOB-GEO0001 v1.0.0. Geometry and projections follow the CIVITA library,
+% prism.png, and the geometry figure design standard.
+% Build from this directory with SOURCE_DATE_EPOCH=0 and
+% pdflatex -halt-on-error -no-shell-escape prism.tex. Convert the PDF with
+% pdftocairo -svg prism.pdf prism.svg.
+\documentclass[border=1pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tikz}
+\input{civita_geometry_style.tex}
+\pdfinfoomitdate=1
+
+% Illustrative construction dimensions in mm. All printed labels are symbolic.
+\newcommand{\PrismLength}{150}   % length along x
+\newcommand{\PrismThickness}{48} % thickness along y
+\newcommand{\PrismDepth}{52}      % depth along z
+
+\newcommand{\PrismOrthoScale}{.66}
+\newcommand{\PrismIsoScale}{.63}
+\pgfmathsetmacro{\PrismIsoHorizontal}{\PrismIsoScale/sqrt(2)}
+\pgfmathsetmacro{\PrismIsoDown}{\PrismIsoScale/sqrt(6)}
+\pgfmathsetmacro{\PrismIsoUp}{2*\PrismIsoDown}
+
+% The reference marks O at the corner from which x, y, and z all run
+% into the specimen. Project these same local points in each panel.
+\newcommand{\PrismPoints}{%
+  \coordinate (prism-o) at (0,0,0);
+  \coordinate (prism-x) at (\PrismLength,0,0);
+  \coordinate (prism-y) at (0,\PrismThickness,0);
+  \coordinate (prism-z) at (0,0,\PrismDepth);
+  \coordinate (prism-xy) at (\PrismLength,\PrismThickness,0);
+  \coordinate (prism-xz) at (\PrismLength,0,\PrismDepth);
+  \coordinate (prism-yz) at (0,\PrismThickness,\PrismDepth);
+  \coordinate (prism-xyz) at (\PrismLength,\PrismThickness,\PrismDepth);
+  \coordinate (axis-x) at (28,0,0);
+  \coordinate (axis-y) at (0,28,0);
+  \coordinate (axis-z) at (0,0,28);
+}
+
+\begin{document}
+\begin{tikzpicture}[civita/figure]
+  \CivitaCanvas
+
+  \begin{CivitaPanel}{1}{1}{(a) 3D View}
+    % View along (-1,-1,-1), with positive z projected upward as specified.
+    \begin{scope}[shift={(111,76)},x={(-\PrismIsoHorizontal pt,-\PrismIsoDown pt)},
+      y={(\PrismIsoHorizontal pt,-\PrismIsoDown pt)},z={(0pt,\PrismIsoUp pt)}]
+      \PrismPoints
+      \path[civita/front] (prism-y) -- (prism-xy) -- (prism-xyz) -- (prism-yz) -- cycle;
+      \path[civita/side] (prism-x) -- (prism-xy) -- (prism-xyz) -- (prism-xz) -- cycle;
+      \path[civita/end] (prism-z) -- (prism-xz) -- (prism-xyz) -- (prism-yz) -- cycle;
+      \draw[civita/edge] (prism-x) -- (prism-xz) -- (prism-z) -- (prism-yz)
+        -- (prism-y) -- (prism-xy) -- cycle;
+      \draw[civita/edge] (prism-xyz) -- (prism-xz)
+        (prism-xyz) -- (prism-yz)
+        (prism-xyz) -- (prism-xy);
+      % O is the occluded corner in this view. Its three incident edges are hidden.
+      \draw[civita/hidden] (prism-o) -- (prism-x)
+        (prism-o) -- (prism-y)
+        (prism-o) -- (prism-z);
+    \end{scope}
+    \CivitaAxis{prism-o}{axis-x}{north west}{x}
+    \CivitaAxis{prism-o}{axis-y}{south west}{y}
+    \CivitaAxis{prism-o}{axis-z}{west}{z}
+    \CivitaOrigin[yshift=-5pt]{prism-o}{north}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{1}{2}{(b) x-y View}
+    % View along -z. The two end faces project to the same rectangle.
+    \begin{scope}[shift={(40,62)},x={(\PrismOrthoScale pt,0pt)},
+      y={(0pt,\PrismOrthoScale pt)},z={(0pt,0pt)}]
+      \PrismPoints
+      \draw[civita/edge] (prism-o) rectangle (prism-xy);
+    \end{scope}
+    \CivitaHorizontalDimension{prism-o}{prism-x}{53}{\CivitaParameter{length}}
+    \CivitaAxis{prism-o}{axis-x}{south west}{x}
+    \CivitaAxis{prism-o}{axis-y}{west}{y}
+    \CivitaOrigin{prism-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{1}{(c) x-z View}
+    % View along +y, with positive x to the right and positive z upward.
+    \begin{scope}[shift={(40,48)},x={(\PrismOrthoScale pt,0pt)},
+      y={(0pt,0pt)},z={(0pt,\PrismOrthoScale pt)}]
+      \PrismPoints
+      \draw[civita/edge] (prism-o) rectangle (prism-xz);
+    \end{scope}
+    \CivitaVerticalDimension{prism-o}{prism-z}{31}{left=1pt,rotate=90,anchor=south}{\CivitaParameter{depth}}
+    \CivitaAxis{prism-o}{axis-x}{south west}{x}
+    \CivitaAxis{prism-o}{axis-z}{west}{z}
+    \CivitaOrigin{prism-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{2}{(d) y-z View}
+    % View along -x, with positive y to the right and positive z upward.
+    \begin{scope}[shift={(74,48)},x={(0pt,0pt)},
+      y={(\PrismOrthoScale pt,0pt)},z={(0pt,\PrismOrthoScale pt)}]
+      \PrismPoints
+      \draw[civita/edge] (prism-o) rectangle (prism-yz);
+    \end{scope}
+    \CivitaHorizontalDimension{prism-o}{prism-y}{39}{\CivitaParameter{thickness}}
+    \CivitaAxis{prism-o}{axis-y}{south west}{y}
+    \CivitaAxis{prism-o}{axis-z}{west}{z}
+    \CivitaOrigin{prism-o}{north east}
+  \end{CivitaPanel}
+\end{tikzpicture}
+\end{document}
