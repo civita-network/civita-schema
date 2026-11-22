@@ -6,13 +6,13 @@
 //
 // Stages:
 //   1. structural  JSON Schema Draft 2020-12 validation against
-//                  geometry_library.schema.json (requires Ajv; see below)
+//                  geometry_library.schema.json (requires Ajv and ajv-formats)
 //   2. semantic    internal consistency checks and expression parsing
 //   3. figures     SVG, PDF, TikZ source, and shared style files
 //
-// Ajv is located through normal module resolution or the CIVITA_AJV_DIR
-// environment variable. If it is unavailable the structural stage is reported
-// as SKIPPED; with --strict a skipped stage makes the command fail.
+// Dependencies are located through normal module resolution or CIVITA_AJV_DIR.
+// If either is unavailable, the structural stage is reported as SKIPPED.
+// With --strict a skipped stage makes the command fail.
 // Exit status: 0 if no executed stage failed, 1 otherwise.
 
 import path from "node:path";
@@ -54,8 +54,7 @@ if (ajv.unavailable) {
   try {
     const compiled = compileLibrarySchema(ajv);
     const { valid, errors } = validateLibraryStructure(compiled, library);
-    const formats = compiled.formatsValidated ? "" : "; format keywords not asserted (ajv-formats unavailable)";
-    report("structural", valid ? "PASSED" : "FAILED", `geometry_library.schema.json via ${ajv.source}${formats}`, errors);
+    report("structural", valid ? "PASSED" : "FAILED", `geometry_library.schema.json via ${ajv.source}`, errors);
   } catch (error) {
     report("structural", "FAILED", `schema compilation failed: ${error.message}`);
   }

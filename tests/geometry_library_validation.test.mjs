@@ -1,14 +1,13 @@
 // Automated tests for the CIVITA Geometry Library validation framework.
 // Run from the civita-schema root:
-//   node --test tests/
-// Structural (JSON Schema) tests need Ajv; set CIVITA_AJV_DIR if it is not
-// resolvable from this repository. Without Ajv those tests are reported as
-// skipped, never as passed.
+//   npm ci
+//   npm run test:geometry
 
 import { test, describe } from "node:test";
-const structuralTest = test;
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, rmdirSync, unlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import {
   REPOSITORY_ROOT,
@@ -28,9 +27,9 @@ const LIBRARY = readJson("geometry_library.json");
 const REFERENCE = readJson("tests/fixtures/geometry_library_reference.json");
 const clone = () => structuredClone(LIBRARY);
 
-const ajvBundle = await loadAjv();
-const SKIP_STRUCTURAL = ajvBundle.unavailable ? `structural tests skipped: ${ajvBundle.unavailable}` : false;
-const compiled = ajvBundle.unavailable ? null : compileLibrarySchema(ajvBundle);
+const ajvBundle = await loadAjv({});
+assert.equal(ajvBundle.unavailable, undefined, ajvBundle.unavailable);
+const compiled = compileLibrarySchema(ajvBundle);
 const structural = (library) => validateLibraryStructure(compiled, library);
 const semanticCodes = (library) => validateLibrarySemantics(library).errors.map((e) => e.code);
 
@@ -94,8 +93,8 @@ describe("expression grammar", () => {
     assert.deepEqual(expressionIdentifiers(parseExpression("notch_offset + 0.5 * notch_width - notch_offset")), ["notch_offset", "notch_width"]);
   });
 
-  for (const bad of ["", "   ", "(length", "length)", "length +", "* length", "-length", "length ** 2", "length ^ 2",
-    "max(length, 2)", "Math.max(length)", "1e5", "1.2.3", ".5", "2length", "length; process.exit()", "length = 2", "length,2"]) {
+  for (const bad of ["", "   ", "(length", "length)", "length +", "* length", "-length", "-2", "+2", "length ** 2", "length ^ 2",
+    "max(length, 2)", "Math.max(length)", "sqrt(diameter)", "1e5", "1.2.3", ".5", "12.", "2length", "length; process.exit()", "length = 2", "length,2"]) {
     test(`rejects ${JSON.stringify(bad)}`, () => assert.throws(() => parseExpression(bad), { name: "ExpressionError" }));
   }
 
@@ -107,7 +106,11 @@ describe("expression grammar", () => {
 });
 
 describe("structural validation (JSON Schema Draft 2020-12)", () => {
-  const test = (name, fn) => structuralTest(name, { skip: SKIP_STRUCTURAL }, fn);
+  test("loads Ajv and ajv-formats through local module resolution", () => {
+    assert.match(ajvBundle.source, /^civita-schema module resolution \(ajv 8\..*, ajv-formats\)$/);
+    assert.equal(compiled.formatsValidated, true);
+  });
+
   test("the authoritative library is valid", () => assert.deepEqual(structural(LIBRARY).errors, []));
 
   test("a new, correctly structured geometry type is accepted", () => {
@@ -406,11 +409,70 @@ describe("ell shape instances", () => {
 });
 
 describe("command-line interface", () => {
-  test("validates the authoritative library and exits with status 0", () => {
-    const cli = spawnSync(process.execPath, [path.join(REPOSITORY_ROOT, "scripts", "validate_geometry_library.mjs")], { cwd: REPOSITORY_ROOT, encoding: "utf8" });
+  const script = path.join(REPOSITORY_ROOT, "scripts", "validate_geometry_library.mjs");
+  const env = { ...process.env };
+  delete env.CIVITA_AJV_DIR;
+
+  function runStrictCli(args = [], nodeArgs = []) {
+    const cli = spawnSync(process.execPath, [...nodeArgs, script, "--strict", ...args], { cwd: REPOSITORY_ROOT, encoding: "utf8", env });
+    assert.ifError(cli.error);
+    return cli;
+  }
+
+  function temporaryLibrary(t, content) {
+    const dir = mkdtempSync(path.join(tmpdir(), "civita-geometry-test-"));
+    const file = path.join(dir, "library.json");
+    writeFileSync(file, content);
+    t.after(() => {
+      unlinkSync(file);
+      rmdirSync(dir);
+    });
+    return file;
+  }
+
+  test("strict mode validates the authoritative library and exits with status 0", () => {
+    const cli = runStrictCli();
     assert.equal(cli.status, 0, cli.stdout + cli.stderr);
-    assert.match(cli.stdout, /\[PASSED\] semantic/);
-    assert.match(cli.stdout, /\[PASSED\] figures/);
-    assert.match(cli.stdout, SKIP_STRUCTURAL ? /\[SKIPPED\] structural/ : /\[PASSED\] structural/);
+    for (const stage of ["parse", "structural", "semantic", "figures"]) {
+      assert.ok(cli.stdout.includes(`[PASSED] ${stage}`), cli.stdout);
+    }
   });
+
+  test("invalid JSON reports a parse failure and exits with status 1", (t) => {
+    const cli = runStrictCli([temporaryLibrary(t, "{")]);
+    assert.equal(cli.status, 1, cli.stdout + cli.stderr);
+    assert.match(cli.stdout, /\[FAILED\] parse/);
+  });
+
+  test("an invalid metadata URI fails strict structural validation", (t) => {
+    const library = clone();
+    library.metadata.repository = "not a URI";
+    const cli = runStrictCli([temporaryLibrary(t, JSON.stringify(library))]);
+    assert.equal(cli.status, 1, cli.stdout + cli.stderr);
+    assert.match(cli.stdout, /\[FAILED\] structural/);
+    assert.match(cli.stdout, /\/metadata\/repository must match format "uri"/);
+  });
+
+  for (const [specifier, dependency] of [["ajv/dist/2020.js", "Ajv (Draft 2020-12)"], ["ajv-formats", "ajv-formats"]]) {
+    test(`strict mode rejects missing ${dependency}`, () => {
+      // Override resolution only in the child process. Keep node_modules intact.
+      const hook = `
+        import { registerHooks } from "node:module";
+        registerHooks({
+          resolve(specifier, context, nextResolve) {
+            if (specifier === ${JSON.stringify(specifier)}) {
+              throw Object.assign(new Error("Simulated missing dependency"), { code: "MODULE_NOT_FOUND" });
+            }
+            return nextResolve(specifier, context);
+          }
+        });
+      `;
+      const cli = runStrictCli([], ["--import", `data:text/javascript,${encodeURIComponent(hook)}`]);
+      assert.equal(cli.status, 1, cli.stdout + cli.stderr);
+      assert.match(cli.stdout, /\[SKIPPED\] structural/);
+      assert.ok(cli.stdout.includes(`${dependency}: MODULE_NOT_FOUND`), cli.stdout);
+      assert.match(cli.stdout, /\[PASSED\] semantic/);
+      assert.match(cli.stdout, /\[PASSED\] figures/);
+    });
+  }
 });
