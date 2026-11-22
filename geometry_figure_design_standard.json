@@ -1,0 +1,498 @@
+{
+  "metadata": {
+    "id": "civita.common.geometry_figure_design_standard",
+    "title": "CIVITA Geometry Figure Design Standard",
+    "description": "Defines the graphical conventions, mandatory views, dimensioning rules, and validation requirements for authoritative CIVITA geometry figures.",
+    "type": "model_definition",
+    "version": "1.0.0",
+    "status": "draft",
+    "repository": "https://github.com/civita-network/civita-schema"
+  },
+  "references": {
+    "geometry_library": "geometry_library.json",
+    "metadata_schema": "metadata.schema.json",
+    "geometry_library_guidance": "README.md#geometry-library"
+  },
+  "coordinate_system": {
+    "source": "geometry_library.json",
+    "type": "right_handed_cartesian",
+    "axis_order": [
+      "x",
+      "y",
+      "z"
+    ],
+    "origin_label": "O",
+    "origin_coordinates": [
+      0,
+      0,
+      0
+    ],
+    "origin_in_each_view": true,
+    "axis_labels_use_local_names": true,
+    "axis_arrows_point_positive": true,
+    "orthographic_axes": "in_plane_only",
+    "vector_conventions": {
+      "components": "Coordinates in the local x, y, z axis order.",
+      "viewing_direction": "Direction from the observer toward the geometry.",
+      "screen_right": "Local direction corresponding to the right on the drawing.",
+      "screen_up": "Local direction corresponding to the top of the drawing."
+    },
+    "requirement": "Use the origin, axis meanings, and positive directions of the resolved geometry definition in every panel. Project the same geometry and origin in all four views."
+  },
+  "layout": {
+    "rows": 2,
+    "columns": 2,
+    "panel_index_base": 1,
+    "row_order": "top_to_bottom",
+    "column_order": "left_to_right",
+    "defaults_pt": {
+      "panel_width": 180,
+      "panel_height": 134,
+      "horizontal_gap": 12,
+      "vertical_gap": 14,
+      "panel_padding": 8
+    },
+    "uniform_panel_dimensions": true,
+    "panel_title_alignment": "top_left",
+    "orthographic_scale": "shared_within_figure",
+    "axonometric_scale": "independent_uniform_scale_allowed",
+    "max_additional_panels_required": 0,
+    "requirement": "Use the same panel dimensions, spacing, and title style throughout. Fit each projection by uniform scaling and translation."
+  },
+  "views": {
+    "view_3d": {
+      "required": true,
+      "type": "axonometric",
+      "projection": "isometric",
+      "panel": {
+        "row": 1,
+        "column": 1,
+        "title": "(a) 3D View"
+      },
+      "viewing_direction": [
+        -1,
+        -1,
+        -1
+      ],
+      "screen_up_reference": [
+        0,
+        0,
+        1
+      ],
+      "requirement": "Use the projection of screen_up_reference to set the vertical direction. Show the complete specimen, its origin, and arrows for all three positive local axes. Use the visible and hidden edge styles and keep dimension annotations concise."
+    },
+    "view_xy": {
+      "required": true,
+      "type": "orthographic",
+      "panel": {
+        "row": 1,
+        "column": 2,
+        "title": "(b) x-y View"
+      },
+      "projection_plane": [
+        "x",
+        "y"
+      ],
+      "viewing_direction": [
+        0,
+        0,
+        -1
+      ],
+      "screen_right": [
+        1,
+        0,
+        0
+      ],
+      "screen_up": [
+        0,
+        1,
+        0
+      ]
+    },
+    "view_xz": {
+      "required": true,
+      "type": "orthographic",
+      "panel": {
+        "row": 2,
+        "column": 1,
+        "title": "(c) x-z View"
+      },
+      "projection_plane": [
+        "x",
+        "z"
+      ],
+      "viewing_direction": [
+        0,
+        1,
+        0
+      ],
+      "screen_right": [
+        1,
+        0,
+        0
+      ],
+      "screen_up": [
+        0,
+        0,
+        1
+      ]
+    },
+    "view_yz": {
+      "required": true,
+      "type": "orthographic",
+      "panel": {
+        "row": 2,
+        "column": 2,
+        "title": "(d) y-z View"
+      },
+      "projection_plane": [
+        "y",
+        "z"
+      ],
+      "viewing_direction": [
+        -1,
+        0,
+        0
+      ],
+      "screen_right": [
+        0,
+        1,
+        0
+      ],
+      "screen_up": [
+        0,
+        0,
+        1
+      ]
+    }
+  },
+  "geometry_representation": {
+    "same_geometry_in_all_views": true,
+    "orthographic": {
+      "projection": "parallel_onto_named_plane_through_local_origin",
+      "preserve_proportions": true,
+      "show_hidden_edges_when_needed": true,
+      "dimension_independent_parameters": true
+    },
+    "optional_aids_within_panels": [
+      "construction_lines",
+      "section_indications"
+    ],
+    "requirement": "Include every mandatory view for every geometry, including simple projections. Keep visibility, projected features, and geometry proportions consistent with the same local definition."
+  },
+  "parameter_labels": {
+    "source": "geometry_library.json",
+    "definition_resolution": [
+      "geometry_type_id",
+      "geometry_type_version"
+    ],
+    "identifier": "exact_geometry_library_parameter_name",
+    "latex_formatting_preserves_identifier": true,
+    "independent": {
+      "required_minimum_views": 1,
+      "show_optional_when_geometrically_meaningful": true,
+      "repeat_only_for_clarity": true
+    },
+    "derived": {
+      "display": "optional",
+      "label_as_derived_if_shown": true,
+      "counts_toward_independent_coverage": false,
+      "expression_source": {
+        "collection_in_resolved_definition": "derived_parameters",
+        "entry_field": "expression"
+      }
+    },
+    "units": {
+      "source": "geometry_library.json",
+      "use_declared_units": true,
+      "current_library_note": "The current library expresses lengths in mm."
+    },
+    "values": {
+      "label_with_symbolic_parameter_names": true,
+      "allow_representative_values_for_internal_construction": true,
+      "show_numerical_values_only_when_required_for_the_figure": true
+    }
+  },
+  "dimensioning": {
+    "defaults_pt": {
+      "first_line_offset": 9,
+      "stacked_line_spacing": 8,
+      "extension_gap": 2,
+      "extension_overrun": 2,
+      "label_clearance": 2,
+      "arrowhead_length": 4,
+      "arrowhead_width": 3
+    },
+    "standard_dimension_arrowheads": "both_ends",
+    "radius_arrowheads": "single_leader_to_arc",
+    "extension_rule": "Extend from the measured feature with a small gap and continue past the dimension line.",
+    "dimension_line_placement": "outside_geometry_when_possible",
+    "label_placement": "centered_near_dimension_line_with_clearance",
+    "avoid_overlap_with": [
+      "geometry",
+      "axes",
+      "other_annotations"
+    ],
+    "signed_dimension_rule": "Measure from the reference named by the geometry definition and show the corresponding positive local axis direction.",
+    "centerline_rule": "Use centerlines for actual geometry centers or axes.",
+    "symmetry_rule": "Place symmetry indicators on confirmed lines or planes of symmetry."
+  },
+  "graphical_style": {
+    "constants_configurable": true,
+    "background": "#FFFFFF",
+    "colors": {
+      "geometry": "#242424",
+      "hidden": "#555555",
+      "centerline": "#525252",
+      "construction": "#737373",
+      "axes": "#245B83",
+      "dimension": "#202020",
+      "surface": "#ECEFF1",
+      "text": "#1B1B1B"
+    },
+    "roles": {
+      "visible_edges": {
+        "stroke": "geometry",
+        "pattern": "solid",
+        "line_width_pt": 0.7
+      },
+      "hidden_edges": {
+        "stroke": "hidden",
+        "pattern": "short_dash",
+        "line_width_pt": 0.45
+      },
+      "centerlines": {
+        "stroke": "centerline",
+        "pattern": "dash_dot",
+        "line_width_pt": 0.45
+      },
+      "coordinate_axes": {
+        "stroke": "axes",
+        "pattern": "solid",
+        "line_width_pt": 0.65,
+        "arrowheads": "positive_end"
+      },
+      "dimension_lines": {
+        "stroke": "dimension",
+        "pattern": "solid",
+        "line_width_pt": 0.45
+      },
+      "extension_lines": {
+        "stroke": "dimension",
+        "pattern": "solid",
+        "line_width_pt": 0.35
+      },
+      "construction_lines": {
+        "stroke": "construction",
+        "pattern": "dotted",
+        "line_width_pt": 0.35
+      },
+      "symmetry_indicators": {
+        "stroke": "centerline",
+        "pattern": "solid",
+        "line_width_pt": 0.45,
+        "marker": "paired_short_strokes"
+      },
+      "geometry_surfaces": {
+        "fill": "surface",
+        "fill_style": "flat",
+        "views": [
+          "view_3d"
+        ]
+      },
+      "labels": {
+        "text_color": "text",
+        "font_family": "document_sans_serif",
+        "font_size_pt": 8
+      },
+      "panel_titles": {
+        "text_color": "text",
+        "font_family": "document_sans_serif",
+        "font_size_pt": 9,
+        "font_weight": "bold"
+      },
+      "origin_markers": {
+        "text_color": "axes",
+        "marker": "filled_dot",
+        "radius_pt": 1.3,
+        "label": "O"
+      }
+    },
+    "decorative_effects_allowed": false
+  },
+  "tikz_implementation": {
+    "status": "planned",
+    "authoritative_source_format": "latex_tikz",
+    "sources_per_geometry": 1,
+    "geometry_name_source": "geometry_library.json",
+    "geometry_source_path": "figures/geometries/tikz/{geometry_name}.tex",
+    "shared_style_path": "figures/geometries/tikz/civita_geometry_style.tex",
+    "reusable_macros": [
+      "axis_triad",
+      "in_plane_axes",
+      "dimensions",
+      "four_panel_layout"
+    ],
+    "compilation": "standard_latex_workflow",
+    "generated_outputs": {
+      "svg": "figures/geometries/generated/{geometry_name}.svg",
+      "pdf": "figures/geometries/generated/{geometry_name}.pdf"
+    },
+    "requirement": "Use shared styles and consistent typography and scaling. Generate PDF and SVG from the same authoritative source with a recorded build configuration. Existing PNG references remain in use during the transition."
+  },
+  "validation_rules": [
+    {
+      "id": "mandatory_views",
+      "methods": [
+        "automated",
+        "graphical_review"
+      ],
+      "requirement": "Verify exactly four views for each geometry, including simple projections."
+    },
+    {
+      "id": "panel_placement",
+      "methods": [
+        "automated",
+        "graphical_review"
+      ],
+      "requirement": "Verify the mandatory view identifiers, positions, and titles against the declared layout."
+    },
+    {
+      "id": "local_axes",
+      "methods": [
+        "automated",
+        "scientific_review"
+      ],
+      "requirement": "Verify the declared projection bases and local axis labels against the resolved geometry definition. Confirm the depicted axis directions."
+    },
+    {
+      "id": "right_handed_frame",
+      "methods": [
+        "automated",
+        "scientific_review"
+      ],
+      "requirement": "Verify the local basis is right-handed and each screen basis is consistent with the specified viewing direction."
+    },
+    {
+      "id": "origin",
+      "methods": [
+        "automated",
+        "graphical_review"
+      ],
+      "requirement": "Verify that every origin marker projects from the same local origin."
+    },
+    {
+      "id": "parameter_identifiers",
+      "methods": [
+        "automated"
+      ],
+      "requirement": "Compare each declared dimension label identifier with the resolved geometry definition."
+    },
+    {
+      "id": "independent_parameter_coverage",
+      "methods": [
+        "automated",
+        "scientific_review"
+      ],
+      "requirement": "Verify every required independent parameter is represented at least once and each dimension measures the intended feature."
+    },
+    {
+      "id": "derived_parameter_roles",
+      "methods": [
+        "automated",
+        "graphical_review"
+      ],
+      "requirement": "Verify derived labels are identified as derived and count only independent labels toward required coverage."
+    },
+    {
+      "id": "derived_expression_fidelity",
+      "methods": [
+        "automated",
+        "scientific_review"
+      ],
+      "requirement": "Verify every displayed derived relationship agrees with the resolved library expression."
+    },
+    {
+      "id": "projection_consistency",
+      "methods": [
+        "automated",
+        "scientific_review"
+      ],
+      "requirement": "Verify that all panels reference the same geometry version and input values. Check that projected features, proportions, and visibility agree across views."
+    },
+    {
+      "id": "source_and_output_files",
+      "methods": [
+        "automated"
+      ],
+      "requirement": "Verify that all required source, shared style, SVG, and PDF files exist once the planned sources and builds are in use."
+    },
+    {
+      "id": "compilation",
+      "methods": [
+        "automated"
+      ],
+      "requirement": "Compile the authoritative TikZ source successfully with the recorded LaTeX build configuration."
+    },
+    {
+      "id": "output_provenance",
+      "methods": [
+        "automated"
+      ],
+      "requirement": "Verify that the SVG and PDF outputs match a rebuild from the authoritative TikZ source and shared styles at the pinned revision."
+    },
+    {
+      "id": "legibility",
+      "methods": [
+        "graphical_review"
+      ],
+      "requirement": "Review typography, line distinctions, contrast, and label placement at the intended display size."
+    },
+    {
+      "id": "geometry_only",
+      "methods": [
+        "graphical_review",
+        "scientific_review"
+      ],
+      "requirement": "Confirm that all marks describe the specimen geometry or its graphical construction."
+    }
+  ],
+  "validation_evidence": {
+    "implementation": "planned",
+    "automated": "Use source and build records for structural, identifier, provenance, and compilation checks. Use declared geometry and projection data for programmable coordinate and coverage checks.",
+    "graphical_review": "Inspect the rendered panels for legibility, clear dimension roles, and correct placement of projected origins and view content.",
+    "scientific_review": "Review the depicted axes and handedness, dimension meanings, and geometric agreement across projections. Successful compilation establishes buildability only."
+  },
+  "scope": {
+    "include": [
+      "specimen_geometry",
+      "local_reference_system",
+      "geometry_dimensions"
+    ],
+    "exclude": [
+      "boundary_conditions",
+      "loads",
+      "loading_histories",
+      "supports",
+      "loading_devices",
+      "measurement_patches",
+      "experimental_instrumentation",
+      "reinforcement_layouts",
+      "material_properties",
+      "benchmark_specific_annotations"
+    ]
+  },
+  "versioning": {
+    "standard_version": "metadata.version",
+    "geometry_type_version": {
+      "source": "geometry_library.json",
+      "field_in_resolved_definition": "version"
+    },
+    "independent_standard_and_geometry_versions": true,
+    "independent_standard_and_library_versions": true,
+    "draft_revisions_allowed_before_release": true,
+    "published_versions_reproducible": true,
+    "released_documentation_revision": "immutable_commit_or_release",
+    "requirement": "Pin the design standard, geometry definition, authoritative source, shared styles, and build configuration to reproducible revisions when publishing figures. Adopt the approved standard for future geometries before declaring their figures complete."
+  }
+}
