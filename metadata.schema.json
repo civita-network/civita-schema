@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://civita.network/schemas/civita_metadata.schema.json",
+  "$id": "https://civita.network/schemas/metadata.schema.json",
   "title": "CIVITA Specification Metadata Schema",
   "description": "Defines the metadata object used to identify and version authoritative CIVITA JSON specification files. The schema applies to specification metadata, not to submitted scientific datasets.",
   "type": "object",
