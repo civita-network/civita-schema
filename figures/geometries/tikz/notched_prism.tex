@@ -1,0 +1,254 @@
+% GLOB-GEO0004 v1.0.0. Geometry and projections follow the CIVITA library,
+% notched_prism.png, and the geometry figure design standard. Six independent
+% parameters; notch_tip_radius = 0.5 * notch_width is derived.
+% Build from this directory with SOURCE_DATE_EPOCH=0 and
+% pdflatex -halt-on-error -no-shell-escape notched_prism.tex. Convert the PDF
+% with pdftocairo -svg notched_prism.pdf notched_prism.svg.
+%
+% Local frame read from the reference figure: O lies at midspan (x = 0) on
+% the longitudinal edge where the face y = 0 meets the face z = 0. The solid
+% occupies -length/2 <= x <= length/2, 0 <= y <= thickness, 0 <= z <= depth.
+% The reference draws +z downward, so its notch enters from the face
+% z = depth and penetrates toward -z by the positive scalar notch_depth. The
+% notch runs through the full thickness. Its centerline lies at
+% x = notch_offset (signed), and notch_width is measured along x. The notch
+% has parallel sides and ends in a semicircle of radius notch_width/2, so the
+% straight sides are notch_depth - notch_tip_radius long. The design
+% standard projects +z upward, so the same right-handed frame appears rotated
+% and the notched face z = depth is at the top of every view.
+\documentclass[border=1pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\input{civita_geometry_style.tex}
+\pdfinfoomitdate=1
+
+% Illustrative construction dimensions in mm. All printed labels are symbolic.
+\newcommand{\NPLength}{180}      % length along x
+\newcommand{\NPThickness}{60}    % thickness along y
+\newcommand{\NPDepth}{80}        % depth along z
+\newcommand{\NPOffset}{40}       % notch_offset, signed x of the notch centerline
+\newcommand{\NPNotchDepth}{28}   % notch_depth, positive, from the face z = depth
+\newcommand{\NPNotchWidth}{12}   % notch_width, opening width along x
+
+% Derived parameter of the library: notch_tip_radius = 0.5 * notch_width.
+\pgfmathsetmacro{\NPTipRadius}{0.5*\NPNotchWidth}
+% Derived construction values (not parameters of the library).
+\pgfmathsetmacro{\NPHalfLength}{\NPLength/2}
+\pgfmathsetmacro{\NPxl}{\NPOffset-\NPNotchWidth/2}   % notch wall nearer -x
+\pgfmathsetmacro{\NPxr}{\NPOffset+\NPNotchWidth/2}   % notch wall nearer +x
+\pgfmathsetmacro{\NPzb}{\NPDepth-\NPNotchDepth}      % notch tip level
+\pgfmathsetmacro{\NPzc}{\NPzb+\NPTipRadius}          % tip center, end of the straight sides
+
+% Constraints of geometry_library.json (strict positivity of length,
+% thickness, depth, notch_depth, notch_width; notch_depth >= 0.5*notch_width;
+% notch_depth < depth; the notch lies within the length on both sides).
+\newcommand{\NPRequire}[2]{%
+  \pgfmathparse{(#1)?1:0}%
+  \ifnum\pgfmathresult=0
+    \PackageError{civita-notched-prism}{Violated constraint: #2}{Check the parameter values.}%
+  \fi}
+\NPRequire{\NPLength>0 && \NPThickness>0 && \NPDepth>0}{length, thickness, depth > 0}
+\NPRequire{\NPNotchDepth>0 && \NPNotchWidth>0}{notch_depth, notch_width > 0}
+\NPRequire{\NPNotchDepth>=0.5*\NPNotchWidth}{notch_depth >= 0.5 * notch_width}
+\NPRequire{\NPNotchDepth<\NPDepth}{notch_depth < depth}
+\NPRequire{\NPOffset+0.5*\NPNotchWidth<0.5*\NPLength}{notch_offset + 0.5 * notch_width < 0.5 * length}
+\NPRequire{0.5*\NPNotchWidth-\NPOffset<0.5*\NPLength}{0.5 * notch_width - notch_offset < 0.5 * length}
+
+% Notch profile in the x-z plane at a given y: parallel sides at
+% x = notch_offset -/+ notch_width/2 from the notched face down to the tip
+% center z = zc, then the lower semicircle of radius notch_tip_radius about
+% (notch_offset, zc). Its deepest point lies at z = depth - notch_depth.
+% \NPArc{y}{a}{b} is the cubic arc from polar angle a to b (degrees, in the
+% x-z plane about the tip center) with control length (4/3) tan((b-a)/4) r:
+% the standard cubic circle representation, preserved by the affine
+% projections used in every panel.
+\newcommand{\NPArc}[3]{%
+  ({\NPOffset+\NPTipRadius*cos(#2)},#1,{\NPzc+\NPTipRadius*sin(#2)})
+  .. controls ({\NPOffset+\NPTipRadius*(cos(#2)-4/3*tan((#3-#2)/4)*sin(#2))},#1,
+      {\NPzc+\NPTipRadius*(sin(#2)+4/3*tan((#3-#2)/4)*cos(#2))})
+  and ({\NPOffset+\NPTipRadius*(cos(#3)+4/3*tan((#3-#2)/4)*sin(#3))},#1,
+      {\NPzc+\NPTipRadius*(sin(#3)-4/3*tan((#3-#2)/4)*cos(#3))})
+  .. ({\NPOffset+\NPTipRadius*cos(#3)},#1,{\NPzc+\NPTipRadius*sin(#3)})}
+\newcommand{\NPTip}[1]{%
+  (\NPxl,#1,\NPzc) -- \NPArc{#1}{180}{270} -- \NPArc{#1}{270}{360}}
+\newcommand{\NPTipReversed}[1]{%
+  (\NPxr,#1,\NPzc) -- \NPArc{#1}{360}{270} -- \NPArc{#1}{270}{180}}
+% Notched x-z outline of the specimen at a given y.
+\newcommand{\NPOutline}[1]{%
+  (-\NPHalfLength,#1,0) -- (\NPHalfLength,#1,0) -- (\NPHalfLength,#1,\NPDepth)
+  -- (\NPxr,#1,\NPDepth) -- \NPTipReversed{#1} -- (\NPxl,#1,\NPDepth)
+  -- (-\NPHalfLength,#1,\NPDepth) -- cycle}
+% Notch opening region at a given y.
+\newcommand{\NPOpening}[1]{(\NPxl,#1,\NPDepth) -- \NPTip{#1} -- (\NPxr,#1,\NPDepth) -- cycle}
+
+\colorlet{NPNotchSurface}{CivitaSurface!78!CivitaGeometry}
+
+\newcommand{\NPOrthoScale}{.60}
+\newcommand{\NPIsoScale}{.62}
+\pgfmathsetmacro{\NPIsoHorizontal}{\NPIsoScale/sqrt(2)}
+\pgfmathsetmacro{\NPIsoDown}{\NPIsoScale/sqrt(6)}
+\pgfmathsetmacro{\NPIsoUp}{2*\NPIsoDown}
+\newcommand{\NPAxisLength}{16}
+\newcommand{\NPIsoAxisLength}{28}
+
+\begin{document}
+\begin{tikzpicture}[civita/figure]
+  \CivitaCanvas
+
+  \begin{CivitaPanel}{1}{1}{(a) 3D View}
+    % View along (-1,-1,-1), with positive z projected upward. The visible
+    % faces are x = length/2, y = thickness, and the notched face z = depth;
+    % they are never occluded and are painted last. Inside the slot the only
+    % surfaces facing the viewer are the side x = notch_offset - notch_width/2
+    % and the tip arc between polar angles 180 and 315 degrees (where its
+    % inward normal has a positive component along (1,1) in x-z). These two
+    % never overlap on screen, both lie in front of the back face y = 0, and
+    % wherever neither covers an opening the background shows through the
+    % slot. No restriction on thickness or notch_depth is needed.
+    \begin{scope}[shift={(77,48.5)},x={(-\NPIsoHorizontal pt,-\NPIsoDown pt)},
+      y={(\NPIsoHorizontal pt,-\NPIsoDown pt)},z={(0pt,\NPIsoUp pt)}]
+      \newcommand{\NPTopOpening}{(\NPxl,0,\NPDepth) -- (\NPxr,0,\NPDepth)
+        -- (\NPxr,\NPThickness,\NPDepth) -- (\NPxl,\NPThickness,\NPDepth) -- cycle}
+      \newcommand{\NPBackProfile}{(\NPxl,0,\NPDepth) -- \NPTip{0} -- (\NPxr,0,\NPDepth)}
+      \path[fill=NPNotchSurface] (\NPxl,0,\NPzc) -- (\NPxl,\NPThickness,\NPzc)
+        -- (\NPxl,\NPThickness,\NPDepth) -- (\NPxl,0,\NPDepth) -- cycle
+        % one fill for both surfaces, so no seam appears at their tangency
+        \NPArc{\NPThickness}{180}{270} -- \NPArc{\NPThickness}{270}{315}
+        -- \NPArc{0}{315}{270} -- \NPArc{0}{270}{180} -- cycle;
+      % The notch outline on the back face is visible only through the openings.
+      \begin{scope}
+        \clip \NPTopOpening;
+        \draw[civita/edge] \NPBackProfile;
+      \end{scope}
+      \begin{scope}
+        \clip \NPOpening{\NPThickness};
+        \draw[civita/edge] \NPBackProfile;
+      \end{scope}
+      \path[civita/front,civita/edge] \NPOutline{\NPThickness};
+      \path[civita/side,civita/edge] (\NPHalfLength,0,0) -- (\NPHalfLength,\NPThickness,0)
+        -- (\NPHalfLength,\NPThickness,\NPDepth) -- (\NPHalfLength,0,\NPDepth) -- cycle;
+      \path[civita/end,civita/edge] (-\NPHalfLength,0,\NPDepth) -- (\NPxl,0,\NPDepth)
+        -- (\NPxl,\NPThickness,\NPDepth) -- (-\NPHalfLength,\NPThickness,\NPDepth) -- cycle;
+      \path[civita/end,civita/edge] (\NPxr,0,\NPDepth) -- (\NPHalfLength,0,\NPDepth)
+        -- (\NPHalfLength,\NPThickness,\NPDepth) -- (\NPxr,\NPThickness,\NPDepth) -- cycle;
+      % Hidden edges: the rest of the back-face notch outline and the three
+      % edges at the occluded corner (-length/2, 0, 0).
+      % (overlay: the auxiliary clip rectangle must not enlarge the bounding box)
+      \begin{scope}[even odd rule,overlay]
+        \clip ([shift={(-200pt,-200pt)}]0,0,0) rectangle ([shift={(200pt,200pt)}]0,0,0)
+          \NPTopOpening \NPOpening{\NPThickness};
+        \draw[civita/hidden] \NPBackProfile;
+      \end{scope}
+      \draw[civita/hidden] (-\NPHalfLength,0,0) -- (\NPHalfLength,0,0)
+        (-\NPHalfLength,0,0) -- (-\NPHalfLength,\NPThickness,0)
+        (-\NPHalfLength,0,0) -- (-\NPHalfLength,0,\NPDepth);
+      \coordinate (iso-o) at (0,0,0);
+      \coordinate (iso-x) at (\NPIsoAxisLength,0,0);
+      \coordinate (iso-y) at (0,\NPIsoAxisLength,0);
+      \coordinate (iso-z) at (0,0,\NPIsoAxisLength);
+    \end{scope}
+    \CivitaAxis{iso-o}{iso-x}{north west}{x}
+    \CivitaAxis{iso-o}{iso-y}{north west}{y}
+    \CivitaAxis{iso-o}{iso-z}{east}{z}
+    \CivitaOrigin[yshift=-4pt]{iso-o}{north}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{1}{2}{(b) x-y View}
+    % View along -z onto the notched face. The opening spans the thickness.
+    \begin{scope}[shift={(84,52)},x={(\NPOrthoScale pt,0pt)},
+      y={(0pt,\NPOrthoScale pt)},z={(0pt,0pt)}]
+      \draw[civita/edge] (-\NPHalfLength,0) rectangle (\NPHalfLength,\NPThickness);
+      \draw[civita/edge] (\NPxl,0) -- (\NPxl,\NPThickness) (\NPxr,0) -- (\NPxr,\NPThickness);
+      \coordinate (xy-o) at (0,0);
+      \coordinate (xy-x) at (\NPAxisLength,0);
+      \coordinate (xy-y) at (0,\NPAxisLength);
+      \coordinate (xy-left) at (-\NPHalfLength,0);
+      \coordinate (xy-right) at (\NPHalfLength,0);
+      \coordinate (xy-nl) at (\NPxl,\NPThickness);
+      \coordinate (xy-nr) at (\NPxr,\NPThickness);
+      \coordinate (xy-nc) at (\NPOffset,\NPThickness);
+    \end{scope}
+    \CivitaHorizontalDimension{xy-left}{xy-right}{40}{\CivitaParameter{length}}
+    % notch_width: small opening, arrows placed outside the extension lines.
+    \coordinate (xy-w-level) at (0,98);
+    \draw[civita/dimension extension] (xy-nl) -- (xy-nl |- xy-w-level);
+    \draw[civita/dimension extension] (xy-nr) -- (xy-nr |- xy-w-level);
+    \draw[civita/extension] ([xshift=-8pt]xy-nl |- xy-w-level) -- ([xshift=8pt]xy-nr |- xy-w-level);
+    \draw[civita/dimension,arrows=-CivitaArrow] ([xshift=-8pt]xy-nl |- xy-w-level) -- (xy-nl |- xy-w-level);
+    \draw[civita/dimension,arrows=-CivitaArrow] ([xshift=8pt]xy-nr |- xy-w-level) -- (xy-nr |- xy-w-level);
+    \node[civita/label,above=1.5pt] at (xy-nc |- xy-w-level) {\CivitaParameter{notch_width}};
+    \CivitaAxis{xy-o}{xy-x}{south west}{x}
+    \CivitaAxis{xy-o}{xy-y}{west}{y}
+    \CivitaOrigin{xy-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{1}{(c) x-z View}
+    % View along +y. The through-thickness notch is seen in true profile.
+    \begin{scope}[shift={(84,32)},x={(\NPOrthoScale pt,0pt)},
+      y={(0pt,0pt)},z={(0pt,\NPOrthoScale pt)}]
+      \draw[civita/edge] \NPOutline{0};
+      \coordinate (xz-o) at (0,0,0);
+      \coordinate (xz-x) at (\NPAxisLength,0,0);
+      \coordinate (xz-z) at (0,0,\NPAxisLength);
+      \coordinate (xz-left) at (-\NPHalfLength,0,0);
+      \coordinate (xz-left-top) at (-\NPHalfLength,0,\NPDepth);
+      \coordinate (xz-tip) at (\NPOffset,0,\NPzb);
+      \coordinate (xz-tip-center) at (\NPOffset,0,\NPzc);
+      \coordinate (xz-notch-face) at (\NPOffset,0,\NPDepth);
+      \coordinate (xz-depth-col) at ({\NPxl-8},0,0);
+    \end{scope}
+    % Midspan and notch centerlines, run down to the notch_offset dimension.
+    \coordinate (xz-offset-level) at (0,20);
+    \draw[civita/centerline] (xz-o |- xz-offset-level) -- ([yshift=6pt]xz-o |- xz-notch-face);
+    \draw[civita/centerline] (xz-tip |- xz-offset-level) -- (xz-tip);
+    % notch_offset is a signed x-coordinate: measured from midspan, the
+    % arrow points to the notch centerline in the positive x direction.
+    \draw[civita/dimension,arrows=-CivitaArrow] (xz-o |- xz-offset-level) -- (xz-tip |- xz-offset-level)
+      node[civita/label,midway,below=1.5pt] {\CivitaParameter{notch_offset}};
+    \CivitaVerticalDimension{xz-left}{xz-left-top}{19}{left=1pt,rotate=90,anchor=south}{\CivitaParameter{depth}}
+    % notch_depth: from the notched face inward to the tip, with a leader.
+    \draw[civita/dimension extension] (xz-tip) -- (xz-depth-col |- xz-tip);
+    % Spans under 10 pt take their arrowheads outside the extension lines.
+    \pgfmathparse{\NPNotchDepth*\NPOrthoScale<10?1:0}
+    \ifnum\pgfmathresult=0
+      \draw[civita/dimension] (xz-depth-col |- xz-tip) -- (xz-depth-col |- xz-notch-face);
+    \else
+      \draw[civita/extension] (xz-depth-col |- xz-tip) -- (xz-depth-col |- xz-notch-face);
+      \draw[civita/dimension,arrows=-CivitaArrow] ([yshift=-7pt]xz-depth-col |- xz-tip) -- (xz-depth-col |- xz-tip);
+      \draw[civita/dimension,arrows=-CivitaArrow] ([yshift=7pt]xz-depth-col |- xz-notch-face) -- (xz-depth-col |- xz-notch-face);
+    \fi
+    \draw[civita/extension] ($(xz-depth-col |- xz-tip)!.5!(xz-depth-col |- xz-notch-face)$)
+      -- (xz-depth-col |- 0,92) -- ([xshift=-3pt]xz-depth-col |- 0,92);
+    \node[civita/label,anchor=east] at ([xshift=-3.5pt]xz-depth-col |- 0,92) {\CivitaParameter{notch_depth}};
+    % Derived tip radius: radial leader through the tip center to the arc,
+    % annotated with the library relation in smaller, secondary type.
+    \draw[civita/dimension,arrows=-CivitaArrow] (xz-tip |- 0,104) -- (xz-tip);
+    \draw[civita/extension] (xz-tip |- 0,104) -- ([xshift=3pt]xz-tip |- 0,104);
+    \node[civita/label,font=\sffamily\fontsize{7}{8}\selectfont,align=left,anchor=west]
+      at ([xshift=3.5pt]xz-tip |- 0,104)
+      {\CivitaParameter{notch_width} =\\ 2\,\CivitaParameter{notch_tip_radius}};
+    \CivitaAxis{xz-o}{xz-x}{south west}{x}
+    \CivitaAxis{xz-o}{xz-z}{west}{z}
+    \CivitaOrigin[xshift=-1.5pt]{xz-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{2}{(d) y-z View}
+    % View along -x. The notch is internal here; its tip is a hidden line.
+    \begin{scope}[shift={(75,32)},x={(0pt,0pt)},
+      y={(\NPOrthoScale pt,0pt)},z={(0pt,\NPOrthoScale pt)}]
+      \draw[civita/edge] (0,0,0) rectangle (0,\NPThickness,\NPDepth);
+      \draw[civita/hidden] (0,0,\NPzb) -- (0,\NPThickness,\NPzb);
+      \coordinate (yz-o) at (0,0,0);
+      \coordinate (yz-y) at (0,\NPAxisLength,0);
+      \coordinate (yz-z) at (0,0,\NPAxisLength);
+      \coordinate (yz-right) at (0,\NPThickness,0);
+    \end{scope}
+    \CivitaHorizontalDimension{yz-o}{yz-right}{20}{\CivitaParameter{thickness}}
+    \CivitaAxis{yz-o}{yz-y}{south west}{y}
+    \CivitaAxis{yz-o}{yz-z}{west}{z}
+    \CivitaOrigin{yz-o}{north east}
+  \end{CivitaPanel}
+\end{tikzpicture}
+\end{document}

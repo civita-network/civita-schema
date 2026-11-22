@@ -144,7 +144,7 @@
         "x_axis": "Longitudinal direction along the specimen length.",
         "y_axis": "Transverse direction along the specimen thickness.",
         "z_axis": "Vertical direction along the specimen depth.",
-        "notch_convention": "The notch has parallel sides and terminates in a semicircle whose radius is half notch_width. notch_depth is the strictly positive distance along the local z axis from the notched face to the deepest point of the tip, regardless of the sign of the coordinate displacement. When notch_depth equals half notch_width, the straight-sided segment has zero length. notch_offset is the signed x-coordinate of the notch centerline relative to midspan."
+        "notch_convention": "The notch has parallel sides and terminates in a semicircle whose radius is half notch_width. notch_depth is the strictly positive distance along the local z axis from the notched face to the deepest point of the tip, regardless of the sign of the coordinate displacement. The notch must have a strictly positive straight-sided segment before the semicircular termination; therefore, notch_depth must exceed half notch_width. notch_offset is the signed x-coordinate of the notch centerline relative to midspan."
       },
       "parameters": [
         {
@@ -208,7 +208,7 @@
       "geometric_constraints": [
         {
           "left": "notch_depth",
-          "operator": ">=",
+          "operator": ">",
           "right": "0.5 * notch_width"
         },
         {
@@ -339,16 +339,37 @@
       "name": "ell_shape",
       "version": "1.0.0",
       "display_name": "Ell Shape",
-      "description": "L-shaped specimen represented by two orthogonal legs.",
+      "description": "L-shaped specimen formed by two orthogonal legs with uniform thickness. The overall dimensions are ell_length_1 along x and ell_depth_1 along z. The full-depth leg has width ell_length_2, and ell_depth_2 defines the distance from the reentrant corner to the end of that leg.",
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
           "path": "figures/geometries/generated/ell_shape.svg"
         },
-        "origin": "Upper-left exterior corner on the rear face of the specimen, marked O in the ell-shape reference figure.",
-        "x_axis": "Horizontal leg direction.",
-        "y_axis": "Thickness direction.",
-        "z_axis": "Vertical leg direction."
+        "origin": "Exterior corner of the L-shaped profile on the reference face at y = 0, corresponding to x = 0 and z = 0, marked O in the reference figure.",
+        "x_axis": "Positive x extends from O into the specimen along its overall length.",
+        "y_axis": "Direction through the specimen thickness.",
+        "z_axis": "Positive z extends from O into the specimen along its overall depth.",
+        "profile_convention": {
+          "plane": "x-z",
+          "reentrant_corner": {
+            "x": "ell_length_2",
+            "z": "ell_depth_1 - ell_depth_2"
+          },
+          "vertices_xz": [
+            [0, 0],
+            ["ell_length_1", 0],
+            ["ell_length_1", "ell_depth_1 - ell_depth_2"],
+            ["ell_length_2", "ell_depth_1 - ell_depth_2"],
+            ["ell_length_2", "ell_depth_1"],
+            [0, "ell_depth_1"]
+          ],
+          "extrusion": {
+            "axis": "y",
+            "direction": "positive",
+            "from": 0,
+            "distance": "thickness"
+          }
+        }
       },
       "parameters": [
         {
@@ -356,7 +377,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Specimen thickness along the local y direction.",
+          "description": "Uniform specimen thickness along the local y direction.",
           "exclusiveMinimum": 0
         },
         {
@@ -364,7 +385,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Length of the first leg as defined in the geometry scheme.",
+          "description": "Overall specimen dimension along the local x direction.",
           "exclusiveMinimum": 0
         },
         {
@@ -372,7 +393,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Depth of the first leg as defined in the geometry scheme.",
+          "description": "Overall specimen dimension along the local z direction.",
           "exclusiveMinimum": 0
         },
         {
@@ -380,7 +401,7 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Length of the second leg as defined in the geometry scheme.",
+          "description": "Width along the local x direction of the leg extending through the full specimen depth.",
           "exclusiveMinimum": 0
         },
         {
@@ -388,8 +409,20 @@
           "required": true,
           "type": "number",
           "unit": "mm",
-          "description": "Depth of the second leg as defined in the geometry scheme.",
+          "description": "Distance along the local z direction from the reentrant corner to the end of the full-depth leg.",
           "exclusiveMinimum": 0
+        }
+      ],
+      "geometric_constraints": [
+        {
+          "left": "ell_length_2",
+          "operator": "<",
+          "right": "ell_length_1"
+        },
+        {
+          "left": "ell_depth_2",
+          "operator": "<",
+          "right": "ell_depth_1"
         }
       ]
     },
