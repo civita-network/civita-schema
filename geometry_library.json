@@ -210,6 +210,15 @@
       "version": "1.0.0",
       "display_name": "Dogbone",
       "description": "Dogbone specimen with two identical enlarged heads, two identical transition regions, and a reduced central region.",
+      "transition_type": {
+        "type": "string",
+        "enum": [
+          "linear_transition",
+          "curved_transition"
+        ],
+        "default": "curved_transition",
+        "description": "Specifies whether the transitions between the enlarged heads and the reduced central region are linear or curved. For curved transitions, the precise curvature is not prescribed."
+      },
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
