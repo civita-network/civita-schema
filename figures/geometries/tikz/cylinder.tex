@@ -1,0 +1,157 @@
+% GLOB-GEO0003 v1.0.0. Geometry and projections follow the CIVITA library,
+% cylinder.png, and the geometry figure design standard.
+% Build from this directory with SOURCE_DATE_EPOCH=0 and
+% pdflatex -halt-on-error -no-shell-escape cylinder.tex. Convert the PDF with
+% pdftocairo -svg cylinder.pdf cylinder.svg.
+%
+% Definition: x^2 + y^2 <= (diameter/2)^2, 0 <= z <= length. O is the center
+% of the reference end face z = 0 and the z axis is the cylinder axis. The
+% reference figure draws +z downward from that face; the design standard
+% projects +z upward, so the same right-handed frame is shown rotated, with
+% the z = 0 face at the bottom of every view.
+\documentclass[border=1pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tikz}
+\usetikzlibrary{3d}
+\input{civita_geometry_style.tex}
+\pdfinfoomitdate=1
+
+% Illustrative construction dimensions in mm. All printed labels are symbolic.
+\newcommand{\CylinderLength}{160}   % length along z
+\newcommand{\CylinderDiameter}{80}  % diameter in the x-y plane
+\pgfmathsetmacro{\CylinderRadius}{\CylinderDiameter/2}
+\ifdim\CylinderLength pt>0pt\else
+  \PackageError{civita-cylinder}{length must be positive}{Check the dimensions.}
+\fi
+\ifdim\CylinderDiameter pt>0pt\else
+  \PackageError{civita-cylinder}{diameter must be positive}{Check the dimensions.}
+\fi
+
+\newcommand{\CylinderOrthoScale}{.60}
+\newcommand{\CylinderIsoScale}{.54}
+\pgfmathsetmacro{\CylinderIsoHorizontal}{\CylinderIsoScale/sqrt(2)}
+\pgfmathsetmacro{\CylinderIsoDown}{\CylinderIsoScale/sqrt(6)}
+\pgfmathsetmacro{\CylinderIsoUp}{2*\CylinderIsoDown}
+
+% Lengths of the drawn axis arrows and of the centerline overrun (local mm).
+\newcommand{\CylinderAxisLength}{28}
+\newcommand{\CylinderCenterOverrun}{10}
+\pgfmathsetmacro{\CylinderCenterTop}{\CylinderLength+\CylinderCenterOverrun}
+% In the 3D view the in-plane axes run past the near rim so that their labels
+% clear the end-face contour, and the centerline clears the top ellipse.
+\pgfmathsetmacro{\CylinderIsoAxisLength}{1.4*\CylinderRadius}
+\pgfmathsetmacro{\CylinderIsoCenterTop}{\CylinderLength+\CylinderRadius}
+
+% Local points shared by all four projections.
+\newcommand{\CylinderPoints}{%
+  \coordinate (cyl-o) at (0,0,0);
+  \coordinate (cyl-top) at (0,0,\CylinderLength);
+  \coordinate (cyl-x-minus) at (-\CylinderRadius,0,0);
+  \coordinate (cyl-x-plus) at (\CylinderRadius,0,0);
+  \coordinate (cyl-y-minus) at (0,-\CylinderRadius,0);
+  \coordinate (cyl-y-plus) at (0,\CylinderRadius,0);
+  \coordinate (cyl-x-minus-top) at (-\CylinderRadius,0,\CylinderLength);
+  \coordinate (cyl-x-plus-top) at (\CylinderRadius,0,\CylinderLength);
+  \coordinate (cyl-y-minus-top) at (0,-\CylinderRadius,\CylinderLength);
+  \coordinate (cyl-y-plus-top) at (0,\CylinderRadius,\CylinderLength);
+  \coordinate (center-low) at (0,0,-\CylinderCenterOverrun);
+  \coordinate (center-high) at (0,0,\CylinderCenterTop);
+  \coordinate (axis-x) at (\CylinderAxisLength,0,0);
+  \coordinate (axis-y) at (0,\CylinderAxisLength,0);
+  \coordinate (axis-z) at (0,0,\CylinderAxisLength);
+}
+
+\begin{document}
+\begin{tikzpicture}[civita/figure]
+  \CivitaCanvas
+
+  \begin{CivitaPanel}{1}{1}{(a) 3D View}
+    % View along (-1,-1,-1), with positive z projected upward. Each end circle
+    % is drawn in its own x-y plane and projected by the same affine map, so
+    % the ellipses follow from the projection (semi-axes R s and R s/sqrt 3).
+    % The silhouette generators lie at polar angles 135 and -45 degrees,
+    % where the projected circle reaches its horizontal extremes.
+    \begin{scope}[shift={(90,27)},x={(-\CylinderIsoHorizontal pt,-\CylinderIsoDown pt)},
+      y={(\CylinderIsoHorizontal pt,-\CylinderIsoDown pt)},z={(0pt,\CylinderIsoUp pt)}]
+      \CylinderPoints
+      \coordinate (sil-a0) at ({\CylinderRadius*cos(135)},{\CylinderRadius*sin(135)},0);
+      \coordinate (sil-b0) at ({\CylinderRadius*cos(-45)},{\CylinderRadius*sin(-45)},0);
+      \coordinate (sil-a1) at ({\CylinderRadius*cos(135)},{\CylinderRadius*sin(135)},\CylinderLength);
+      \coordinate (sil-b1) at ({\CylinderRadius*cos(-45)},{\CylinderRadius*sin(-45)},\CylinderLength);
+      % Lateral surface: the bottom ellipse together with the band between
+      % the silhouette generators.
+      \begin{scope}[canvas is xy plane at z=0]
+        \path[civita/front] (0,0) circle[radius=\CylinderRadius];
+      \end{scope}
+      \path[civita/front] (sil-a0) -- (sil-b0) -- (sil-b1) -- (sil-a1) -- cycle;
+      % Bottom end face z = 0: the near half (x + y > 0) is visible.
+      \begin{scope}[canvas is xy plane at z=0]
+        \draw[civita/hidden] (135:\CylinderRadius)
+          arc[start angle=135,end angle=315,radius=\CylinderRadius];
+        \draw[civita/edge] (-45:\CylinderRadius)
+          arc[start angle=-45,end angle=135,radius=\CylinderRadius];
+      \end{scope}
+      % Top end face z = length, fully visible.
+      \begin{scope}[canvas is xy plane at z=\CylinderLength]
+        \path[civita/end,civita/edge] (0,0) circle[radius=\CylinderRadius];
+      \end{scope}
+      \draw[civita/edge] (sil-a0) -- (sil-a1) (sil-b0) -- (sil-b1);
+      \coordinate (iso-x) at (\CylinderIsoAxisLength,0,0);
+      \coordinate (iso-y) at (0,\CylinderIsoAxisLength,0);
+      \coordinate (iso-center-high) at (0,0,\CylinderIsoCenterTop);
+      \draw[civita/centerline] (axis-z) -- (iso-center-high);
+    \end{scope}
+    \CivitaAxis{cyl-o}{iso-x}{north east}{x}
+    \CivitaAxis{cyl-o}{iso-y}{north west}{y}
+    \CivitaAxis{cyl-o}{axis-z}{south west}{z}
+    \CivitaOrigin[yshift=-3pt]{cyl-o}{north}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{1}{2}{(b) x-y View}
+    % View along -z. Both end faces project to the same circle.
+    \begin{scope}[shift={(90,70)},x={(\CylinderOrthoScale pt,0pt)},
+      y={(0pt,\CylinderOrthoScale pt)},z={(0pt,0pt)}]
+      \CylinderPoints
+      \coordinate (xy-c-left) at ({-\CylinderRadius-\CylinderCenterOverrun},0,0);
+      \coordinate (xy-c-right) at ({\CylinderRadius+\CylinderCenterOverrun},0,0);
+      \coordinate (xy-c-low) at (0,{-\CylinderRadius-\CylinderCenterOverrun},0);
+      \coordinate (xy-c-high) at (0,{\CylinderRadius+\CylinderCenterOverrun},0);
+      \draw[civita/centerline] (xy-c-left) -- (cyl-x-minus) (cyl-x-plus) -- (xy-c-right);
+      \draw[civita/centerline] (xy-c-low) -- (cyl-y-minus) (axis-y) -- (xy-c-high);
+      \draw[civita/edge] (cyl-o) circle[radius=\CylinderRadius];
+    \end{scope}
+    \CivitaHorizontalDimension{cyl-x-minus}{cyl-x-plus}{36}{\CivitaParameter{diameter}}
+    \CivitaAxis{cyl-o}{axis-x}{south west}{x}
+    \CivitaAxis{cyl-o}{axis-y}{west}{y}
+    \CivitaOrigin{cyl-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{1}{(c) x-z View}
+    % View along +y, with positive x to the right and positive z upward.
+    \begin{scope}[shift={(90,16)},x={(\CylinderOrthoScale pt,0pt)},
+      y={(0pt,0pt)},z={(0pt,\CylinderOrthoScale pt)}]
+      \CylinderPoints
+      \draw[civita/centerline] (center-low) -- (center-high);
+      \draw[civita/edge] (cyl-x-minus) rectangle (cyl-x-plus-top);
+    \end{scope}
+    \CivitaVerticalDimension{cyl-x-minus}{cyl-x-minus-top}{53}{left=1pt,rotate=90,anchor=south}{\CivitaParameter{length}}
+    \CivitaAxis{cyl-o}{axis-x}{south west}{x}
+    \CivitaAxis{cyl-o}{axis-z}{west}{z}
+    \CivitaOrigin[xshift=-1.5pt]{cyl-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{2}{(d) y-z View}
+    % View along -x, with positive y to the right and positive z upward.
+    \begin{scope}[shift={(90,16)},x={(0pt,0pt)},
+      y={(\CylinderOrthoScale pt,0pt)},z={(0pt,\CylinderOrthoScale pt)}]
+      \CylinderPoints
+      \draw[civita/centerline] (center-low) -- (center-high);
+      \draw[civita/edge] (cyl-y-minus) rectangle (cyl-y-plus-top);
+    \end{scope}
+    \CivitaAxis{cyl-o}{axis-y}{south west}{y}
+    \CivitaAxis{cyl-o}{axis-z}{west}{z}
+    \CivitaOrigin[xshift=-1.5pt]{cyl-o}{north east}
+  \end{CivitaPanel}
+\end{tikzpicture}
+\end{document}
