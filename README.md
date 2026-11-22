@@ -46,3 +46,9 @@ foreach ($source in $dataset.literature_sources) {
     }
 }
 ```
+
+## License and Copyright
+
+Original technical schemas, interface definitions, and the build script are licensed under [MIT](LICENSE). Eligible terms in `source_types.json` and public metadata use [CC0 1.0](LICENSE-CC0). See [the local license scope](LICENSING.md) for scientific documentation and linked assets. Copyright in original software contributions remains with the respective contributors or other applicable rights holders.
+
+See the [CIVITA licensing policy](https://github.com/civita-network/civita/blob/main/LICENSING.md), [authors and attribution](https://github.com/civita-network/civita/blob/main/AUTHORS.md), and [contribution guidelines](https://github.com/civita-network/civita/blob/main/CONTRIBUTING.md).
