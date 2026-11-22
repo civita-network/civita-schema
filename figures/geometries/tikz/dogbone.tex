@@ -1,0 +1,216 @@
+% GLOB-GEO0005 v1.0.0. Geometry and projection conventions follow the CIVITA
+% library and figure design standard. Compile from this directory with pdflatex.
+% The SVG is generated from the PDF with pdftocairo -svg.
+\documentclass[border=1pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tikz}
+\input{civita_geometry_style.tex}
+
+% Illustrative construction input in mm. Labels stay symbolic.
+\newcommand{\DogboneLength}{170}         % length
+\newcommand{\DogboneWidth}{112}          % width
+\newcommand{\DogboneCentralLength}{46}   % dogbone_central_length
+\newcommand{\DogboneCentralWidth}{52}    % dogbone_central_width
+\newcommand{\DogboneHeadLength}{32}      % dogbone_head_length
+\newcommand{\DogboneThickness}{24}       % dogbone_thickness
+
+\pgfmathsetmacro{\DogboneTransitionLength}{.5*(\DogboneLength-2*\DogboneHeadLength-\DogboneCentralLength)}
+\pgfmathsetmacro{\DogboneTransitionWidth}{.5*(\DogboneWidth-\DogboneCentralWidth)}
+\ifdim\DogboneTransitionLength pt>0pt\else
+  \PackageError{civita-dogbone}{Transition length must be positive}{Check the independent dimensions.}
+\fi
+\ifdim\DogboneTransitionWidth pt>0pt\else
+  \PackageError{civita-dogbone}{Transition width must be positive}{Check the independent dimensions.}
+\fi
+\ifdim\DogboneTransitionLength pt=\DogboneTransitionWidth pt\else
+  \PackageError{civita-dogbone}{The prototype uses equal transition extents}{Select an equal-extents drawing fixture for the quarter-round profile.}
+\fi
+
+% O lies on z=0. The 0.43 and 0.59 visual offsets follow the supplied drawing.
+% The library does not specify exact x and y offsets for that point.
+\pgfmathsetmacro{\DogboneLeft}{-.43*\DogboneWidth}
+\pgfmathsetmacro{\DogboneRight}{\DogboneLeft+\DogboneWidth}
+\pgfmathsetmacro{\DogboneFar}{-.59*\DogboneThickness}
+\pgfmathsetmacro{\DogboneNear}{\DogboneFar+\DogboneThickness}
+\pgfmathsetmacro{\DogboneGaugeLeft}{\DogboneLeft+\DogboneTransitionWidth}
+\pgfmathsetmacro{\DogboneGaugeRight}{\DogboneRight-\DogboneTransitionWidth}
+\pgfmathsetmacro{\DogboneGaugeStart}{\DogboneHeadLength+\DogboneTransitionLength}
+\pgfmathsetmacro{\DogboneGaugeEnd}{\DogboneGaugeStart+\DogboneCentralLength}
+\pgfmathsetmacro{\DogboneSecondHead}{\DogboneLength-\DogboneHeadLength}
+\pgfmathsetmacro{\DogboneGaugeMid}{.5*(\DogboneGaugeStart+\DogboneGaugeEnd)}
+
+% The reference uses quarter-round arcs. The chosen fixture has equal axial
+% and lateral transition extents. Use the standard cubic representation of
+% each quarter arc and mirror it at the specimen midplanes.
+\pgfmathsetmacro{\DogboneKappa}{4*(sqrt(2)-1)/3}
+\pgfmathsetmacro{\DogboneControlLeft}{\DogboneLeft+\DogboneKappa*\DogboneTransitionWidth}
+\pgfmathsetmacro{\DogboneControlRight}{\DogboneRight-\DogboneKappa*\DogboneTransitionWidth}
+\pgfmathsetmacro{\DogboneControlStart}{\DogboneGaugeStart-\DogboneKappa*\DogboneTransitionLength}
+\pgfmathsetmacro{\DogboneControlEnd}{\DogboneGaugeEnd+\DogboneKappa*\DogboneTransitionLength}
+\newcommand{\DogboneOutline}[1]{%
+  (\DogboneLeft,#1,0) -- (\DogboneRight,#1,0) -- (\DogboneRight,#1,\DogboneHeadLength)
+    .. controls (\DogboneControlRight,#1,\DogboneHeadLength) and
+      (\DogboneGaugeRight,#1,\DogboneControlStart) .. (\DogboneGaugeRight,#1,\DogboneGaugeStart)
+  -- (\DogboneGaugeRight,#1,\DogboneGaugeEnd)
+    .. controls (\DogboneGaugeRight,#1,\DogboneControlEnd) and
+      (\DogboneControlRight,#1,\DogboneSecondHead) .. (\DogboneRight,#1,\DogboneSecondHead)
+  -- (\DogboneRight,#1,\DogboneLength) -- (\DogboneLeft,#1,\DogboneLength)
+  -- (\DogboneLeft,#1,\DogboneSecondHead)
+    .. controls (\DogboneControlLeft,#1,\DogboneSecondHead) and
+      (\DogboneGaugeLeft,#1,\DogboneControlEnd) .. (\DogboneGaugeLeft,#1,\DogboneGaugeEnd)
+  -- (\DogboneGaugeLeft,#1,\DogboneGaugeStart)
+    .. controls (\DogboneGaugeLeft,#1,\DogboneControlStart) and
+      (\DogboneControlLeft,#1,\DogboneHeadLength) .. (\DogboneLeft,#1,\DogboneHeadLength)
+  -- cycle%
+}
+
+% For the isometric view, two of the shoulder bands are visible up to the
+% 45-degree tangent. Split their profile cubics at t=1/2 to keep the
+% silhouette and projected face boundaries consistent with the outline.
+\pgfmathsetmacro{\DogboneHalfNear}{.5-3*\DogboneKappa/8}
+\pgfmathsetmacro{\DogboneHalfFar}{.5+3*\DogboneKappa/8}
+\pgfmathsetmacro{\DogboneSplitRightX}{\DogboneGaugeRight+\DogboneHalfNear*\DogboneTransitionWidth}
+\pgfmathsetmacro{\DogboneSplitRightZ}{\DogboneGaugeEnd+\DogboneHalfFar*\DogboneTransitionLength}
+\pgfmathsetmacro{\DogboneSplitLeftX}{\DogboneLeft+\DogboneHalfFar*\DogboneTransitionWidth}
+\pgfmathsetmacro{\DogboneSplitLeftZ}{\DogboneHeadLength+\DogboneHalfNear*\DogboneTransitionLength}
+
+% Start, two cubic controls, and end are supplied as x-z pairs.
+\newcommand{\DogboneCurveBand}[8]{%
+  \path[civita/side] ({#1},\DogboneFar,{#2})
+    .. controls ({#3},\DogboneFar,{#4}) and ({#5},\DogboneFar,{#6}) .. ({#7},\DogboneFar,{#8})
+    -- ({#7},\DogboneNear,{#8})
+    .. controls ({#5},\DogboneNear,{#6}) and ({#3},\DogboneNear,{#4}) .. ({#1},\DogboneNear,{#2})
+    -- cycle;
+  \draw[civita/edge] ({#1},\DogboneFar,{#2})
+    .. controls ({#3},\DogboneFar,{#4}) and ({#5},\DogboneFar,{#6}) .. ({#7},\DogboneFar,{#8});
+}
+
+\newcommand{\DogboneFlatBand}[3]{%
+  \path[civita/side] (#1,\DogboneFar,#2) -- (#1,\DogboneFar,#3)
+    -- (#1,\DogboneNear,#3) -- (#1,\DogboneNear,#2) -- cycle;
+  \draw[civita/edge] (#1,\DogboneFar,#2) -- (#1,\DogboneFar,#3);
+}
+
+\newcommand{\DogboneOrthoScale}{.46}
+\newcommand{\DogboneIsoScale}{.50}
+\pgfmathsetmacro{\DogboneIsoHorizontal}{\DogboneIsoScale/sqrt(2)}
+\pgfmathsetmacro{\DogboneIsoDown}{\DogboneIsoScale/sqrt(6)}
+\pgfmathsetmacro{\DogboneIsoUp}{2*\DogboneIsoDown}
+
+\begin{document}
+\begin{tikzpicture}[civita/figure]
+  \CivitaCanvas
+
+  \begin{CivitaPanel}{1}{1}{(a) 3D View}
+    % View from the positive octant. Screen right is proportional to
+    % (-1,1,0), and screen up is the projected positive z direction.
+    \begin{scope}[shift={(88,24)},x={(-\DogboneIsoHorizontal pt,-\DogboneIsoDown pt)},
+      y={(\DogboneIsoHorizontal pt,-\DogboneIsoDown pt)},z={(0pt,\DogboneIsoUp pt)}]
+      \DogboneCurveBand{\DogboneLeft}{\DogboneHeadLength}
+        {\DogboneLeft+\DogboneKappa*\DogboneTransitionWidth/2}{\DogboneHeadLength}
+        {\DogboneLeft+(1+2*\DogboneKappa)*\DogboneTransitionWidth/4}
+        {\DogboneHeadLength+(1-\DogboneKappa)*\DogboneTransitionLength/4}
+        {\DogboneSplitLeftX}{\DogboneSplitLeftZ}
+      \DogboneFlatBand{\DogboneRight}{0}{\DogboneHeadLength}
+      \DogboneCurveBand{\DogboneRight}{\DogboneHeadLength}
+        {\DogboneControlRight}{\DogboneHeadLength}{\DogboneGaugeRight}{\DogboneControlStart}
+        {\DogboneGaugeRight}{\DogboneGaugeStart}
+      \DogboneFlatBand{\DogboneGaugeRight}{\DogboneGaugeStart}{\DogboneGaugeEnd}
+      \DogboneCurveBand{\DogboneGaugeRight}{\DogboneGaugeEnd}
+        {\DogboneGaugeRight}{\DogboneGaugeEnd+\DogboneKappa*\DogboneTransitionLength/2}
+        {\DogboneGaugeRight+(1-\DogboneKappa)*\DogboneTransitionWidth/4}
+        {\DogboneGaugeEnd+(1+2*\DogboneKappa)*\DogboneTransitionLength/4}
+        {\DogboneSplitRightX}{\DogboneSplitRightZ}
+      \DogboneFlatBand{\DogboneRight}{\DogboneSecondHead}{\DogboneLength}
+      \path[civita/end,civita/edge]
+        (\DogboneLeft,\DogboneFar,\DogboneLength) -- (\DogboneRight,\DogboneFar,\DogboneLength)
+        -- (\DogboneRight,\DogboneNear,\DogboneLength) -- (\DogboneLeft,\DogboneNear,\DogboneLength) -- cycle;
+      \foreach \x/\z in {\DogboneRight/0,\DogboneRight/\DogboneHeadLength,
+        \DogboneRight/\DogboneSecondHead,\DogboneLeft/\DogboneHeadLength,
+        \DogboneSplitRightX/\DogboneSplitRightZ,\DogboneSplitLeftX/\DogboneSplitLeftZ}
+        \draw[civita/edge] (\x,\DogboneFar,\z) -- (\x,\DogboneNear,\z);
+      \path[civita/front,civita/edge] \DogboneOutline{\DogboneNear};
+      % Where the near face covers the rear outline, it is safe to mark the
+      % projected lower end and head edge as hidden.
+      \begin{scope}
+        \clip \DogboneOutline{\DogboneNear};
+        \draw[civita/hidden] (\DogboneRight,\DogboneFar,0) -- (\DogboneLeft,\DogboneFar,0)
+          -- (\DogboneLeft,\DogboneFar,\DogboneHeadLength);
+        \draw[civita/hidden] (\DogboneLeft,\DogboneFar,0) -- (\DogboneLeft,\DogboneNear,0);
+      \end{scope}
+      \coordinate (iso-o) at (0,0,0);
+      \coordinate (iso-x) at (31,0,0);
+      \coordinate (iso-y) at (0,31,0);
+      \coordinate (iso-z) at (0,0,32);
+    \end{scope}
+    \CivitaAxis{iso-o}{iso-x}{north east}{x}
+    \CivitaAxis{iso-o}{iso-y}{north west}{y}
+    \CivitaAxis{iso-o}{iso-z}{south}{z}
+    \CivitaOrigin[yshift=-5pt]{iso-o}{north}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{1}{2}{(b) x-y View}
+    % View along -z. The full end face hides the reduced width.
+    \begin{scope}[shift={(86,73)},x=\DogboneOrthoScale pt,y=\DogboneOrthoScale pt]
+      \draw[civita/edge] (\DogboneLeft,\DogboneFar) rectangle (\DogboneRight,\DogboneNear);
+      \foreach \x in {\DogboneGaugeLeft,\DogboneGaugeRight}
+        \draw[civita/hidden] (\x,\DogboneFar) -- (\x,\DogboneNear);
+      \coordinate (xy-o) at (0,0);
+      \coordinate (xy-x) at (31,0);
+      \coordinate (xy-y) at (0,32);
+      \coordinate (xy-left) at (\DogboneLeft,\DogboneFar);
+      \coordinate (xy-right) at (\DogboneRight,\DogboneFar);
+    \end{scope}
+    \CivitaHorizontalDimension{xy-left}{xy-right}{56}{\CivitaParameter{width}}
+    \CivitaAxis{xy-o}{xy-x}{west}{x}
+    \CivitaAxis{xy-o}{xy-y}{south}{y}
+    \CivitaOrigin[yshift=-7.5pt]{xy-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{1}{(c) x-z View}
+    % View along +y. Plot x and z on the screen with no axial distortion.
+    \begin{scope}[shift={(48,25)},x={(\DogboneOrthoScale pt,0pt)},
+      y={(0pt,0pt)},z={(0pt,\DogboneOrthoScale pt)}]
+      \draw[civita/edge] \DogboneOutline{\DogboneFar};
+      \coordinate (xz-o) at (0,0,0);
+      \coordinate (xz-x) at (31,0,0);
+      \coordinate (xz-z) at (0,0,32);
+      \coordinate (xz-left) at (\DogboneLeft,0,0);
+      \coordinate (xz-right) at (\DogboneRight,0,0);
+      \coordinate (xz-far-end) at (\DogboneLeft,0,\DogboneLength);
+      \coordinate (xz-head) at (\DogboneRight,0,\DogboneHeadLength);
+      \coordinate (xz-gauge-start) at (\DogboneGaugeRight,0,\DogboneGaugeStart);
+      \coordinate (xz-gauge-end) at (\DogboneGaugeRight,0,\DogboneGaugeEnd);
+      \coordinate (xz-gauge-left) at (\DogboneGaugeLeft,0,\DogboneGaugeMid);
+      \coordinate (xz-gauge-right) at (\DogboneGaugeRight,0,\DogboneGaugeMid);
+    \end{scope}
+    \CivitaHorizontalDimension{xz-left}{xz-right}{14}{\CivitaParameter{width}}
+    \CivitaVerticalDimension{xz-left}{xz-far-end}{15}{left=1pt,rotate=90,anchor=south}{\CivitaParameter{length}}
+    \CivitaVerticalDimension{xz-right}{xz-head}{84}{right=4pt}{\CivitaParameter{dogbone_head_length}}
+    \CivitaVerticalDimension{xz-gauge-start}{xz-gauge-end}{84}{right=4pt}{\CivitaParameter{dogbone_central_length}}
+    \draw[civita/dimension] (xz-gauge-left) -- (xz-gauge-right);
+    \draw[civita/extension] (xz-gauge-right) -- (84,83) -- (88,83);
+    \node[civita/label,anchor=west] at (89,83) {\CivitaParameter{dogbone_central_width}};
+    \CivitaAxis{xz-o}{xz-x}{south west}{x}
+    \CivitaAxis{xz-o}{xz-z}{south}{z}
+    \CivitaOrigin{xz-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{2}{(d) y-z View}
+    % View along -x. The same longitudinal extent has constant thickness.
+    \begin{scope}[shift={(90,25)},x=\DogboneOrthoScale pt,y=\DogboneOrthoScale pt]
+      \draw[civita/edge] (\DogboneFar,0) rectangle (\DogboneNear,\DogboneLength);
+      \coordinate (yz-o) at (0,0);
+      \coordinate (yz-y) at (32,0);
+      \coordinate (yz-z) at (0,32);
+      \coordinate (yz-left) at (\DogboneFar,0);
+      \coordinate (yz-right) at (\DogboneNear,0);
+    \end{scope}
+    \CivitaHorizontalDimension{yz-left}{yz-right}{14}{\CivitaParameter{dogbone_thickness}}
+    \CivitaAxis{yz-o}{yz-y}{west}{y}
+    \CivitaAxis{yz-o}{yz-z}{south}{z}
+    \CivitaOrigin{yz-o}{north east}
+  \end{CivitaPanel}
+\end{tikzpicture}
+\end{document}

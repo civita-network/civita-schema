@@ -1,0 +1,84 @@
+% Shared formatting for four-view CIVITA geometry figures.
+\usetikzlibrary{arrows.meta}
+
+\definecolor{CivitaGeometry}{HTML}{242424}
+\definecolor{CivitaHidden}{HTML}{555555}
+\definecolor{CivitaCenterline}{HTML}{525252}
+\definecolor{CivitaConstruction}{HTML}{737373}
+\definecolor{CivitaAxes}{HTML}{245B83}
+\definecolor{CivitaDimension}{HTML}{202020}
+\definecolor{CivitaSurface}{HTML}{ECEFF1}
+\definecolor{CivitaText}{HTML}{1B1B1B}
+\colorlet{CivitaSideSurface}{CivitaSurface!92!CivitaGeometry}
+\colorlet{CivitaEndSurface}{CivitaSurface!48!white}
+
+\newcommand{\CivitaPanelWidth}{180}
+\newcommand{\CivitaPanelHeight}{134}
+\newcommand{\CivitaColumnGap}{12}
+\newcommand{\CivitaRowGap}{14}
+\newcommand{\CivitaPanelPadding}{8}
+
+\tikzset{
+  civita/figure/.style={x=1pt,y=1pt,line cap=round,line join=round},
+  civita/edge/.style={draw=CivitaGeometry,line width=.7pt},
+  civita/hidden/.style={draw=CivitaHidden,line width=.45pt,dash pattern=on 2pt off 2pt},
+  civita/centerline/.style={draw=CivitaCenterline,line width=.45pt,
+    dash pattern=on 4pt off 1.5pt on .6pt off 1.5pt},
+  civita/construction/.style={draw=CivitaConstruction,line width=.35pt,dotted},
+  CivitaArrow/.tip={Latex[length=4pt,width=3pt]},
+  civita/dimension/.style={draw=CivitaDimension,line width=.45pt,
+    arrows=CivitaArrow-CivitaArrow},
+  civita/extension/.style={draw=CivitaDimension,line width=.35pt},
+  civita/dimension extension/.style={civita/extension,shorten <=2pt,shorten >=-2pt},
+  civita/axis/.style={draw=CivitaAxes,line width=.65pt,arrows=-CivitaArrow},
+  civita/label/.style={text=CivitaText,font=\sffamily\fontsize{8}{9}\selectfont,inner sep=1pt},
+  civita/axis label/.style={civita/label,text=CivitaAxes},
+  civita/title/.style={text=CivitaText,font=\sffamily\bfseries\fontsize{9}{10}\selectfont,
+    inner sep=0pt,anchor=north west},
+  civita/front/.style={fill=CivitaSurface},
+  civita/side/.style={fill=CivitaSideSurface},
+  civita/end/.style={fill=CivitaEndSurface}
+}
+
+\newcommand{\CivitaCanvas}{%
+  \pgfmathsetmacro{\CivitaFigureWidth}{2*\CivitaPanelWidth+\CivitaColumnGap}%
+  \pgfmathsetmacro{\CivitaFigureHeight}{2*\CivitaPanelHeight+\CivitaRowGap}%
+  \fill[white] (0,0) rectangle (\CivitaFigureWidth,\CivitaFigureHeight);%
+}
+
+% Panel indices follow the design standard, with row one at the top.
+\newenvironment{CivitaPanel}[3]{%
+  \pgfmathsetmacro{\CivitaPanelX}{(#2-1)*(\CivitaPanelWidth+\CivitaColumnGap)}%
+  \pgfmathsetmacro{\CivitaPanelY}{(2-#1)*(\CivitaPanelHeight+\CivitaRowGap)}%
+  \begin{scope}[shift={(\CivitaPanelX,\CivitaPanelY)}]%
+    \node[civita/title] at (\CivitaPanelPadding,{\CivitaPanelHeight-\CivitaPanelPadding}) {#3};%
+}{\end{scope}}
+
+\newcommand{\CivitaOrigin}[3][]{%
+  \fill[CivitaAxes] (#2) circle[radius=1.3pt];%
+  \node[civita/axis label,anchor=#3,#1] at (#2) {$O$};%
+}
+
+\newcommand{\CivitaAxis}[4]{%
+  \draw[civita/axis] (#1) -- (#2) node[civita/axis label,anchor=#3] {$#4$};%
+}
+
+% Named feature points, dimension level in panel coordinates, and symbolic label.
+\newcommand{\CivitaHorizontalDimension}[4]{%
+  \coordinate (civita-dimension-level) at (0,#3);%
+  \draw[civita/dimension extension] (#1) -- (#1 |- civita-dimension-level);%
+  \draw[civita/dimension extension] (#2) -- (#2 |- civita-dimension-level);%
+  \draw[civita/dimension] (#1 |- civita-dimension-level) -- (#2 |- civita-dimension-level)
+    node[civita/label,midway,below=1.5pt] {#4};%
+}
+
+% Named feature points, dimension column, label placement options, and label.
+\newcommand{\CivitaVerticalDimension}[5]{%
+  \coordinate (civita-dimension-column) at (#3,0);%
+  \draw[civita/dimension extension] (#1) -- (civita-dimension-column |- #1);%
+  \draw[civita/dimension extension] (#2) -- (civita-dimension-column |- #2);%
+  \draw[civita/dimension] (civita-dimension-column |- #1) -- (civita-dimension-column |- #2)
+    node[civita/label,midway,#4] {#5};%
+}
+
+\newcommand{\CivitaParameter}[1]{\textsf{\detokenize{#1}}}
