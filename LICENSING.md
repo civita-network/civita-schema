@@ -5,10 +5,10 @@
 | Original `*.schema.json` technical definitions, the technical geometry structures in `geometry_library.json`, and `build_literature_sources_schema.mjs` | [MIT](LICENSE) |
 | `source_types.json` and eligible CIVITA-owned public metadata, including eligible annotation values appearing in schema documents | [CC0 1.0 Universal](LICENSE-CC0) |
 | Original scientific and technical prose in the README | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode) |
-| The seven reference PNGs in [`figures/geometries/`](figures/geometries/) | [CC0 1.0 Universal](LICENSE-CC0), authorized by their original creator and copyright holder. |
+| The seven CIVITA geometry figures, including their authoritative LaTeX TikZ source files and generated SVG and PDF representations in [`figures/geometries/`](figures/geometries/) | [CC0 1.0 Universal](LICENSE-CC0), authorized by their original creator and copyright holder. |
 | External diagrams, externally sourced metadata, and third-party content | Retain the original terms and provenance. Follow links to the source and its applicable rights. |
 
-Voluntary attribution for the seven PNGs may cite the [CIVITA Geometry Library](https://github.com/civita-network/civita-schema).
+Voluntary attribution for the seven CIVITA geometry figures may cite the [CIVITA Geometry Library](https://github.com/civita-network/civita-schema).
 
 Copyright in original software contributions remains with the respective contributors or other applicable rights holders.
 

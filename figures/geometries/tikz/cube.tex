@@ -1,5 +1,7 @@
-% GLOB-GEO0002 v1.0.0. Geometry and projections follow the CIVITA library,
-% cube.png, and the geometry figure design standard.
+% GLOB-GEO0002 v1.0.0. The geometry definition and coordinate system follow the
+% CIVITA Geometry Library (geometry_library.json); the graphical presentation
+% follows the CIVITA Geometry Figure Design Standard
+% (geometry_figure_design_standard.json).
 % Build from this directory with SOURCE_DATE_EPOCH=0 and
 % pdflatex -halt-on-error -no-shell-escape cube.tex. Convert the PDF with
 % pdftocairo -svg cube.pdf cube.svg.
@@ -18,7 +20,7 @@
 \pgfmathsetmacro{\CubeIsoDown}{\CubeIsoScale/sqrt(6)}
 \pgfmathsetmacro{\CubeIsoUp}{2*\CubeIsoDown}
 
-% In the reference, the three positive axes run into the specimen from O.
+% As defined in the library, the three positive axes run into the specimen from O.
 % Project these same local points in each panel.
 \newcommand{\CubePoints}{%
   \coordinate (cube-o) at (0,0,0);

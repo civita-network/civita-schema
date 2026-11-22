@@ -1,21 +1,24 @@
-% GLOB-GEO0004 v1.0.0. Geometry and projections follow the CIVITA library,
-% notched_prism.png, and the geometry figure design standard. Six independent
-% parameters; notch_tip_radius = 0.5 * notch_width is derived.
+% GLOB-GEO0004 v1.0.0. Geometry and projections follow geometry_library.json
+% and geometry_figure_design_standard.json. Six independent parameters;
+% notch_tip_radius = 0.5 * notch_width is derived.
 % Build from this directory with SOURCE_DATE_EPOCH=0 and
 % pdflatex -halt-on-error -no-shell-escape notched_prism.tex. Convert the PDF
 % with pdftocairo -svg notched_prism.pdf notched_prism.svg.
 %
-% Local frame read from the reference figure: O lies at midspan (x = 0) on
-% the longitudinal edge where the face y = 0 meets the face z = 0. The solid
-% occupies -length/2 <= x <= length/2, 0 <= y <= thickness, 0 <= z <= depth.
-% The reference draws +z downward, so its notch enters from the face
-% z = depth and penetrates toward -z by the positive scalar notch_depth. The
+% Local frame (geometry_library.json): the reference face ABCD is the plane
+% y = 0, and O is the midpoint of its longitudinal edge AD, i.e. O lies at
+% longitudinal midspan (x = 0) on the edge where the face y = 0 meets the
+% face z = 0. x is parallel to AD, y is normal to ABCD, and z extends from AD
+% toward BC. The solid occupies -length/2 <= x <= length/2,
+% 0 <= y <= thickness, 0 <= z <= depth. The notch enters from the face
+% z = depth and penetrates toward decreasing z by the positive scalar
+% notch_depth, so its deepest point lies at z = depth - notch_depth. The
 % notch runs through the full thickness. Its centerline lies at
 % x = notch_offset (signed), and notch_width is measured along x. The notch
 % has parallel sides and ends in a semicircle of radius notch_width/2, so the
-% straight sides are notch_depth - notch_tip_radius long. The design
-% standard projects +z upward, so the same right-handed frame appears rotated
-% and the notched face z = depth is at the top of every view.
+% straight sides are notch_depth - notch_tip_radius long, which the library
+% requires to be strictly positive. The design standard projects +z upward,
+% so the notched face z = depth is at the top of every view.
 \documentclass[border=1pt]{standalone}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -42,7 +45,8 @@
 \pgfmathsetmacro{\NPzc}{\NPzb+\NPTipRadius}          % tip center, end of the straight sides
 
 % Constraints of geometry_library.json (strict positivity of length,
-% thickness, depth, notch_depth, notch_width; notch_depth >= 0.5*notch_width;
+% thickness, depth, notch_depth, notch_width; notch_depth > 0.5*notch_width,
+% so the straight-sided part of the notch is strictly positive;
 % notch_depth < depth; the notch lies within the length on both sides).
 \newcommand{\NPRequire}[2]{%
   \pgfmathparse{(#1)?1:0}%
@@ -51,7 +55,7 @@
   \fi}
 \NPRequire{\NPLength>0 && \NPThickness>0 && \NPDepth>0}{length, thickness, depth > 0}
 \NPRequire{\NPNotchDepth>0 && \NPNotchWidth>0}{notch_depth, notch_width > 0}
-\NPRequire{\NPNotchDepth>=0.5*\NPNotchWidth}{notch_depth >= 0.5 * notch_width}
+\NPRequire{\NPNotchDepth>0.5*\NPNotchWidth}{notch_depth > 0.5 * notch_width}
 \NPRequire{\NPNotchDepth<\NPDepth}{notch_depth < depth}
 \NPRequire{\NPOffset+0.5*\NPNotchWidth<0.5*\NPLength}{notch_offset + 0.5 * notch_width < 0.5 * length}
 \NPRequire{0.5*\NPNotchWidth-\NPOffset<0.5*\NPLength}{0.5 * notch_width - notch_offset < 0.5 * length}

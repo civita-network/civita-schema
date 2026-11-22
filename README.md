@@ -49,7 +49,7 @@ foreach ($source in $dataset.literature_sources) {
 
 ## Geometry library
 
-The [CIVITA Geometry Library](geometry_library.json) is the shared registry of geometry types, their numerical parametrizations, and their local coordinate systems. Each geometry instance records its local identifier and numerical values together with the global `geometry_type_id` and `geometry_type_version` that define their meaning.
+The [CIVITA Geometry Library](geometry_library.json) is the shared registry of geometry types, their parametrizations, and their local coordinate systems. Each geometry instance records its local identifier and parameter values together with the global `geometry_type_id` and `geometry_type_version` that define their meaning.
 
 The authoritative [reference figures](figures/geometries/) are maintained with the JSON definitions. Resolve the library and its repository-relative figure paths at the same immutable commit or release. Update the JSON and figure together when a geometry changes. Draft definitions can be corrected at their existing versions before the first release. A change to the interpretation of a released geometry requires a new geometry type version.
 
@@ -59,9 +59,9 @@ The figures in `civita-documentation` are legacy copies. Stage 2 will synchroniz
 
 ### Derived parameters and geometric constraints
 
-A geometry definition's `parameters` array lists the independent inputs supplied by a geometry instance. Resolve the geometry by `geometry_type_id` and `geometry_type_version`, then validate the inputs and their numerical bounds. Apply any `geometric_constraints` and calculate `derived_parameters` from the inputs. Check each derived value against its own bounds. Dogbone transition dimensions are derived outputs.
+A geometry definition's `parameters` array lists the independent inputs supplied by a geometry instance. Resolve the geometry by `geometry_type_id` and `geometry_type_version`, then validate the inputs against their declared types. Independent parameters are numerical or categorical: apply numerical bounds to numerical parameters, check categorical values against their `enum`, and use the declared `default` for an omitted optional parameter. Apply any `geometric_constraints` and calculate `derived_parameters` from the inputs. Check each derived value against its own bounds. Dogbone transition dimensions are derived outputs.
 
-Arithmetic expressions use finite decimal literals, names of independent parameters in the same definition, parentheses, and the binary operators `+`, `-`, `*`, and `/`. Evaluate parentheses first, then multiplication and division, then addition and subtraction. Operators at the same precedence group from left to right. Constraint entries compare the `left` and `right` expressions using their `operator`. The `>` comparison is strict. Reject division by zero and nonfinite results. An application should use a restricted arithmetic parser for these expressions.
+Arithmetic expressions use finite decimal literals, names of numerical independent parameters in the same definition, parentheses, and the binary operators `+`, `-`, `*`, and `/`. Evaluate parentheses first, then multiplication and division, then addition and subtraction. Operators at the same precedence group from left to right. Constraint entries compare the `left` and `right` expressions using their `operator`. The `>` comparison is strict. Reject division by zero and nonfinite results. An application should use a restricted arithmetic parser for these expressions.
 
 The library specifies these rules. Applications still need to implement the compatibility and derived-value checks.
 

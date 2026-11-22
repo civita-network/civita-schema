@@ -1,14 +1,15 @@
-% GLOB-GEO0003 v1.0.0. Geometry and projections follow the CIVITA library,
-% cylinder.png, and the geometry figure design standard.
+% GLOB-GEO0003 v1.0.0. The geometry definition and coordinate system follow the
+% CIVITA Geometry Library (geometry_library.json); the graphical presentation
+% follows the CIVITA Geometry Figure Design Standard
+% (geometry_figure_design_standard.json).
 % Build from this directory with SOURCE_DATE_EPOCH=0 and
 % pdflatex -halt-on-error -no-shell-escape cylinder.tex. Convert the PDF with
 % pdftocairo -svg cylinder.pdf cylinder.svg.
 %
 % Definition: x^2 + y^2 <= (diameter/2)^2, 0 <= z <= length. O is the center
 % of the reference end face z = 0 and the z axis is the cylinder axis. The
-% reference figure draws +z downward from that face; the design standard
-% projects +z upward, so the same right-handed frame is shown rotated, with
-% the z = 0 face at the bottom of every view.
+% design standard projects +z upward, so the z = 0 face is at the bottom of
+% every view.
 \documentclass[border=1pt]{standalone}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}

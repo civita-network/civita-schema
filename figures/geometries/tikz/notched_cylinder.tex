@@ -1,5 +1,7 @@
-% GLOB-GEO0007 v1.0.0. Geometry and projections follow the CIVITA library,
-% notched_cylinder.png, and the geometry figure design standard.
+% GLOB-GEO0007 v1.0.0. The geometry definition and coordinate system follow the
+% CIVITA Geometry Library (geometry_library.json); the graphical presentation
+% follows the CIVITA Geometry Figure Design Standard
+% (geometry_figure_design_standard.json).
 % Build from this directory with SOURCE_DATE_EPOCH=0 and
 % pdflatex -halt-on-error -no-shell-escape notched_cylinder.tex. Convert the
 % PDF with pdftocairo -svg notched_cylinder.pdf notched_cylinder.svg.
@@ -18,8 +20,8 @@
 % portion is notch_depth - notch_width/2, which the library requires to be
 % strictly positive.
 %
-% The reference draws +z downward; the design standard projects +z upward, so
-% the same right-handed frame appears rotated, with z = 0 at the bottom.
+% The design standard projects +z upward, so z = 0 is at the bottom of every
+% view.
 \documentclass[border=1pt]{standalone}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}

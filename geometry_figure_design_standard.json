@@ -321,7 +321,7 @@
     "decorative_effects_allowed": false
   },
   "tikz_implementation": {
-    "status": "planned",
+    "status": "implemented",
     "authoritative_source_format": "latex_tikz",
     "sources_per_geometry": 1,
     "geometry_name_source": "geometry_library.json",
@@ -338,7 +338,13 @@
       "svg": "figures/geometries/generated/{geometry_name}.svg",
       "pdf": "figures/geometries/generated/{geometry_name}.pdf"
     },
-    "requirement": "Use shared styles and consistent typography and scaling. Generate PDF and SVG from the same authoritative source with a recorded build configuration. Existing PNG references remain in use during the transition."
+    "format_roles": {
+      "tex": "Authoritative, editable LaTeX TikZ graphical source.",
+      "svg": "Standard geometry figure format for CIVITA web applications.",
+      "pdf": "Standard geometry figure format for LaTeX documentation.",
+      "png": "Not part of the standard geometry figure distribution."
+    },
+    "requirement": "Each geometry figure is authored in LaTeX TikZ using the shared CIVITA graphical style. SVG and PDF outputs must be generated from the same authoritative TikZ source and must represent identical geometry, dimensions, coordinate systems, and annotations. SVG is the standard format for CIVITA web applications, and PDF is the standard format for LaTeX documentation."
   },
   "validation_rules": [
     {
@@ -425,7 +431,7 @@
       "methods": [
         "automated"
       ],
-      "requirement": "Verify that all required source, shared style, SVG, and PDF files exist once the planned sources and builds are in use."
+      "requirement": "Verify that the authoritative TikZ source, shared style, SVG, and PDF files exist for every geometry."
     },
     {
       "id": "compilation",

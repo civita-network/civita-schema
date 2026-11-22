@@ -1,0 +1,182 @@
+% GLOB-GEO0006 v1.0.0. The geometry definition and coordinate system follow the
+% CIVITA Geometry Library (geometry_library.json); the graphical presentation
+% follows the CIVITA Geometry Figure Design Standard
+% (geometry_figure_design_standard.json).
+% Build from this directory with SOURCE_DATE_EPOCH=0 and
+% pdflatex -halt-on-error -no-shell-escape ell_shape.tex. Convert the PDF
+% with pdftocairo -svg ell_shape.pdf ell_shape.svg.
+%
+% Local frame (geometry_library.json): O is the exterior corner of the
+% L-shaped profile on the reference face y = 0, at x = 0, z = 0; x runs along
+% the overall length ell_length_1, z along the overall depth ell_depth_1, and
+% y through the thickness toward the face y = thickness.
+% Dimension meanings:
+%   ell_length_1  overall extent along x, measured along the edge through O;
+%   ell_depth_1   overall extent along z;
+%   ell_length_2  extent along x of the leg that spans the full depth;
+%   ell_depth_2   extent along z of that leg beyond the other leg, i.e. from
+%                 the reentrant level z = ell_depth_1 - ell_depth_2 to the
+%                 far end z = ell_depth_1.
+% The x-z profile is the union of 0 <= x <= ell_length_1,
+% 0 <= z <= ell_depth_1 - ell_depth_2 and 0 <= x <= ell_length_2,
+% 0 <= z <= ell_depth_1, extruded over 0 <= y <= thickness. The reentrant
+% corner lies at (ell_length_2, ell_depth_1 - ell_depth_2). The design
+% standard projects +z upward, so O is at the lower left of the x-z view and
+% the full-depth leg rises from it.
+\documentclass[border=1pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tikz}
+\input{civita_geometry_style.tex}
+\pdfinfoomitdate=1
+
+% Illustrative construction dimensions in mm. All printed labels are symbolic.
+\newcommand{\EllThickness}{40}   % thickness
+\newcommand{\EllLengthOne}{150}  % ell_length_1
+\newcommand{\EllDepthOne}{130}   % ell_depth_1
+\newcommand{\EllLengthTwo}{50}   % ell_length_2
+\newcommand{\EllDepthTwo}{80}    % ell_depth_2
+
+% Construction value (not a library parameter): z of the reentrant level.
+\pgfmathsetmacro{\EllReentrant}{\EllDepthOne-\EllDepthTwo}
+
+% Constraints. Positivity comes from geometry_library.json; the strict
+% inequalities are the geometric constraints of geometry_library.json,
+% without which the profile has no reentrant corner.
+\newcommand{\EllRequire}[2]{%
+  \pgfmathparse{(#1)?1:0}%
+  \ifnum\pgfmathresult=0
+    \PackageError{civita-ell-shape}{Violated constraint: #2}{Check the parameter values.}%
+  \fi}
+\EllRequire{\EllThickness>0 && \EllLengthOne>0 && \EllDepthOne>0
+  && \EllLengthTwo>0 && \EllDepthTwo>0}{all parameters > 0}
+\EllRequire{\EllLengthTwo<\EllLengthOne}{ell_length_2 < ell_length_1}
+\EllRequire{\EllDepthTwo<\EllDepthOne}{ell_depth_2 < ell_depth_1}
+
+% Ell profile in the x-z plane at a given y, starting at the corner x = z = 0.
+\newcommand{\EllProfile}[1]{%
+  (0,#1,0) -- (\EllLengthOne,#1,0) -- (\EllLengthOne,#1,\EllReentrant)
+  -- (\EllLengthTwo,#1,\EllReentrant) -- (\EllLengthTwo,#1,\EllDepthOne)
+  -- (0,#1,\EllDepthOne) -- cycle}
+
+% Named local points shared by all projections.
+\newcommand{\EllPoints}{%
+  \coordinate (ell-o) at (0,0,0);
+  \coordinate (ell-end) at (\EllLengthOne,0,0);
+  \coordinate (ell-end-top) at (\EllLengthOne,0,\EllReentrant);
+  \coordinate (ell-reentrant) at (\EllLengthTwo,0,\EllReentrant);
+  \coordinate (ell-leg-top) at (\EllLengthTwo,0,\EllDepthOne);
+  \coordinate (ell-top) at (0,0,\EllDepthOne);
+  \coordinate (ell-y) at (0,\EllThickness,0);
+}
+
+\newcommand{\EllOrthoScale}{.52}
+\newcommand{\EllIsoScale}{.55}
+\pgfmathsetmacro{\EllIsoHorizontal}{\EllIsoScale/sqrt(2)}
+\pgfmathsetmacro{\EllIsoDown}{\EllIsoScale/sqrt(6)}
+\pgfmathsetmacro{\EllIsoUp}{2*\EllIsoDown}
+\newcommand{\EllAxisLength}{20}
+% Placement of the x-z view (O in panel coordinates) and of the dimensions
+% that follow the far end of the full-depth leg and the end x = ell_length_1.
+\newcommand{\EllXZx}{60}
+\newcommand{\EllXZy}{26}
+\pgfmathsetmacro{\EllLengthTwoLevel}{\EllXZy+\EllDepthOne*\EllOrthoScale+9.5}
+\pgfmathsetmacro{\EllDepthTwoColumn}{\EllXZx+\EllLengthOne*\EllOrthoScale+10}
+\newcommand{\EllIsoAxisLength}{22}
+
+\begin{document}
+\begin{tikzpicture}[civita/figure]
+  \CivitaCanvas
+
+  \begin{CivitaPanel}{1}{1}{(a) 3D View}
+    % View along (-1,-1,-1), with positive z projected upward. The visible
+    % faces are the front y = thickness, the faces x = ell_length_1 and
+    % x = ell_length_2, and the faces z = ell_depth_1 - ell_depth_2 and
+    % z = ell_depth_1. None of them is occluded, so the reentrant corner,
+    % where x = ell_length_2 meets z = ell_depth_1 - ell_depth_2, is visible.
+    % O is the occluded corner; its three incident edges are hidden.
+    \begin{scope}[shift={(111,53)},x={(-\EllIsoHorizontal pt,-\EllIsoDown pt)},
+      y={(\EllIsoHorizontal pt,-\EllIsoDown pt)},z={(0pt,\EllIsoUp pt)}]
+      \path[civita/front,civita/edge] \EllProfile{\EllThickness};
+      \path[civita/side,civita/edge] (\EllLengthOne,0,0) -- (\EllLengthOne,\EllThickness,0)
+        -- (\EllLengthOne,\EllThickness,\EllReentrant) -- (\EllLengthOne,0,\EllReentrant) -- cycle;
+      \path[civita/side,civita/edge] (\EllLengthTwo,0,\EllReentrant)
+        -- (\EllLengthTwo,\EllThickness,\EllReentrant)
+        -- (\EllLengthTwo,\EllThickness,\EllDepthOne) -- (\EllLengthTwo,0,\EllDepthOne) -- cycle;
+      \path[civita/end,civita/edge] (\EllLengthTwo,0,\EllReentrant) -- (\EllLengthOne,0,\EllReentrant)
+        -- (\EllLengthOne,\EllThickness,\EllReentrant)
+        -- (\EllLengthTwo,\EllThickness,\EllReentrant) -- cycle;
+      \path[civita/end,civita/edge] (0,0,\EllDepthOne) -- (\EllLengthTwo,0,\EllDepthOne)
+        -- (\EllLengthTwo,\EllThickness,\EllDepthOne) -- (0,\EllThickness,\EllDepthOne) -- cycle;
+      \EllPoints
+      \draw[civita/hidden] (ell-o) -- (ell-end) (ell-o) -- (ell-top) (ell-o) -- (ell-y);
+      \coordinate (iso-x) at (\EllIsoAxisLength,0,0);
+      \coordinate (iso-y) at (0,\EllIsoAxisLength,0);
+      \coordinate (iso-z) at (0,0,\EllIsoAxisLength);
+    \end{scope}
+    \CivitaAxis{ell-o}{iso-x}{north east}{x}
+    \CivitaAxis{ell-o}{iso-y}{north}{y}
+    \CivitaAxis{ell-o}{iso-z}{west}{z}
+    \CivitaOrigin[yshift=-5pt]{ell-o}{north}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{1}{2}{(b) x-y View}
+    % View along -z. Both end faces of the legs face the viewer; the step
+    % between them at x = ell_length_2 is a visible edge.
+    \begin{scope}[shift={(51,52)},x={(\EllOrthoScale pt,0pt)},
+      y={(0pt,\EllOrthoScale pt)},z={(0pt,0pt)}]
+      \EllPoints
+      \draw[civita/edge] (0,0) rectangle (\EllLengthOne,\EllThickness);
+      \draw[civita/edge] (\EllLengthTwo,0) -- (\EllLengthTwo,\EllThickness);
+      \coordinate (xy-x) at (\EllAxisLength,0);
+      \coordinate (xy-y) at (0,\EllAxisLength);
+    \end{scope}
+    \CivitaAxis{ell-o}{xy-x}{south west}{x}
+    \CivitaAxis{ell-o}{xy-y}{west}{y}
+    \CivitaOrigin{ell-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{1}{(c) x-z View}
+    % View along +y: the ell profile in true shape.
+    \begin{scope}[shift={(\EllXZx,\EllXZy)},x={(\EllOrthoScale pt,0pt)},
+      y={(0pt,0pt)},z={(0pt,\EllOrthoScale pt)}]
+      \EllPoints
+      \draw[civita/edge] \EllProfile{0};
+      \coordinate (xz-x) at (\EllAxisLength,0,0);
+      \coordinate (xz-z) at (0,0,\EllAxisLength);
+    \end{scope}
+    % As defined in the library: ell_length_1 along the edge through O,
+    % ell_depth_1 over the full depth on the side of O, ell_length_2 across
+    % the far end of the full-depth leg, and ell_depth_2 from the reentrant
+    % level to that far end.
+    \CivitaHorizontalDimension{ell-o}{ell-end}{14}{\CivitaParameter{ell_length_1}}
+    \CivitaVerticalDimension{ell-o}{ell-top}{48}{left=1pt,rotate=90,anchor=south}{\CivitaParameter{ell_depth_1}}
+    \coordinate (xz-l2-level) at (0,\EllLengthTwoLevel);
+    \draw[civita/dimension extension] (ell-top) -- (ell-top |- xz-l2-level);
+    \draw[civita/dimension extension] (ell-leg-top) -- (ell-leg-top |- xz-l2-level);
+    \draw[civita/dimension] (ell-top |- xz-l2-level) -- (ell-leg-top |- xz-l2-level)
+      node[civita/label,midway,above=1.5pt] {\CivitaParameter{ell_length_2}};
+    \CivitaVerticalDimension{ell-end-top}{ell-leg-top}{\EllDepthTwoColumn}{left=2pt}{\CivitaParameter{ell_depth_2}}
+    \CivitaAxis{ell-o}{xz-x}{south west}{x}
+    \CivitaAxis{ell-o}{xz-z}{west}{z}
+    \CivitaOrigin{ell-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{2}{(d) y-z View}
+    % View along -x. The end face x = ell_length_1 and the face
+    % x = ell_length_2 face the viewer; they meet at the reentrant level.
+    \begin{scope}[shift={(79,26)},x={(0pt,0pt)},
+      y={(\EllOrthoScale pt,0pt)},z={(0pt,\EllOrthoScale pt)}]
+      \EllPoints
+      \draw[civita/edge] (ell-o) rectangle (0,\EllThickness,\EllDepthOne);
+      \draw[civita/edge] (0,0,\EllReentrant) -- (0,\EllThickness,\EllReentrant);
+      \coordinate (yz-y) at (0,\EllAxisLength,0);
+      \coordinate (yz-z) at (0,0,\EllAxisLength);
+    \end{scope}
+    \CivitaHorizontalDimension{ell-o}{ell-y}{14}{\CivitaParameter{thickness}}
+    \CivitaAxis{ell-o}{yz-y}{south west}{y}
+    \CivitaAxis{ell-o}{yz-z}{west}{z}
+    \CivitaOrigin{ell-o}{north east}
+  \end{CivitaPanel}
+\end{tikzpicture}
+\end{document}

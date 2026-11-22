@@ -140,7 +140,7 @@
         "figure": {
           "path": "figures/geometries/generated/notched_prism.svg"
         },
-        "origin": "Midspan point on the specimen centerline indicated in the notched-prism reference figure.",
+        "origin": "Point O located at longitudinal midspan on the intersection of the reference face y = 0 and the face z = 0. Relative to O, the specimen extends from x = -length/2 to x = +length/2, from y = 0 to y = thickness, and from z = 0 to z = depth.",
         "x_axis": "Longitudinal direction along the specimen length.",
         "y_axis": "Transverse direction along the specimen thickness.",
         "z_axis": "Vertical direction along the specimen depth.",
@@ -234,15 +234,6 @@
       "version": "1.0.0",
       "display_name": "Dogbone",
       "description": "Dogbone specimen with two identical enlarged heads, two identical transition regions, and a reduced central region.",
-      "transition_type": {
-        "type": "string",
-        "enum": [
-          "linear_transition",
-          "curved_transition"
-        ],
-        "default": "curved_transition",
-        "description": "Specifies whether the transitions between the enlarged heads and the reduced central region are linear or curved. For curved transitions, the precise curvature is not prescribed."
-      },
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
@@ -301,6 +292,17 @@
           "unit": "mm",
           "description": "Specimen thickness along the local y axis.",
           "exclusiveMinimum": 0
+        },
+        {
+          "name": "transition_type",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "linear_transition",
+            "curved_transition"
+          ],
+          "default": "curved_transition",
+          "description": "Specifies whether the transitions between the enlarged heads and the reduced central region are linear or curved. For curved transitions, the precise curvature is not prescribed."
         }
       ],
       "derived_parameters": [
@@ -509,12 +511,15 @@
   },
   "validation_conventions": {
     "geometry_type_resolution": "Resolve the exact geometry_type_id and geometry_type_version in the common library. Reject a geometry instance if that pair cannot be resolved.",
-    "parameters": "Validate the required independent inputs defined in parameters. Submitted values contain independent parameters only. Reject unknown input names unless the geometry definition expressly permits them.",
-    "numeric_parameters": "Parameter values must be finite numbers in the declared units.",
+    "parameters": "Validate the independent inputs defined in parameters. Submitted values contain independent parameters only. Each required parameter must be supplied. Reject unknown input names unless the geometry definition expressly permits them.",
+    "parameter_types": "Independent parameters may be numerical (type: number) or categorical (type: string). Each submitted value must conform to the declared type of its parameter definition: a numerical parameter does not accept a string, and a categorical parameter does not accept a number.",
+    "numeric_parameters": "Numerical parameter values must be finite numbers in the declared units. Numerical parameters may declare numerical bounds, which apply only to numerical parameters.",
+    "categorical_parameters": "String parameters may declare their admissible values through enum. A submitted categorical value must equal one of the listed values.",
+    "optional_parameters_and_defaults": "A parameter with required: false may be omitted. Optional parameters may declare a default. When an optional parameter is omitted, its declared default is the effective value used for validation and interpretation of the geometry instance; the default does not need to be inserted into the submitted record.",
     "positive_dimensions": "Dimensions marked exclusiveMinimum: 0 must be strictly positive. Nonnegative radii may equal zero. Offset parameters may be signed.",
     "geometric_constraints": "After validating independent inputs and their bounds, enforce any geometric_constraints defined for the resolved version. Evaluate each left and right expression and compare the results with the specified operator.",
     "local_identifiers": "Experimental and computational geometry record identifiers, publication source identifiers, and submission file formats are intentionally outside the scope of this global library.",
-    "derived_parameters": "Compute each derived parameter from the validated independent inputs and check the result against its declared bounds. Derived values are computed separately from the parameters submitted with the instance.",
-    "expression_syntax": "Expressions contain only finite decimal literals, names of independent parameters in the same definition, parentheses, and binary arithmetic operators +, -, *, and /. Parentheses group first, then multiplication and division, then addition and subtraction. Operators of equal precedence associate left to right. Reject division by zero and nonfinite results. Geometric constraints use the same expression syntax on each side and allow > (strictly greater than), >= (greater than or equal to), and < (strictly less than)."
+    "derived_parameters": "Compute each derived parameter from the validated independent numerical inputs and check the result against its declared bounds. Derived values are computed separately from the parameters submitted with the instance and are not independently supplied.",
+    "expression_syntax": "Expressions contain only finite decimal literals, names of numerical independent parameters in the same definition, parentheses, and binary arithmetic operators +, -, *, and /. Parentheses group first, then multiplication and division, then addition and subtraction. Operators of equal precedence associate left to right. Reject division by zero and nonfinite results. Geometric constraints use the same expression syntax on each side and allow > (strictly greater than), >= (greater than or equal to), and < (strictly less than). Categorical parameters must not appear in derived-parameter expressions or geometric constraints."
   }
 }

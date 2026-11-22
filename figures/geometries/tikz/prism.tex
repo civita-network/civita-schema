@@ -1,5 +1,7 @@
-% GLOB-GEO0001 v1.0.0. Geometry and projections follow the CIVITA library,
-% prism.png, and the geometry figure design standard.
+% GLOB-GEO0001 v1.0.0. The geometry definition and coordinate system follow the
+% CIVITA Geometry Library (geometry_library.json); the graphical presentation
+% follows the CIVITA Geometry Figure Design Standard
+% (geometry_figure_design_standard.json).
 % Build from this directory with SOURCE_DATE_EPOCH=0 and
 % pdflatex -halt-on-error -no-shell-escape prism.tex. Convert the PDF with
 % pdftocairo -svg prism.pdf prism.svg.
@@ -21,7 +23,7 @@
 \pgfmathsetmacro{\PrismIsoDown}{\PrismIsoScale/sqrt(6)}
 \pgfmathsetmacro{\PrismIsoUp}{2*\PrismIsoDown}
 
-% The reference marks O at the corner from which x, y, and z all run
+% As defined in the library, O is the corner from which x, y, and z all run
 % into the specimen. Project these same local points in each panel.
 \newcommand{\PrismPoints}{%
   \coordinate (prism-o) at (0,0,0);
