@@ -32,7 +32,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "path": "figures/geometries/prism.png"
+          "path": "figures/geometries/generated/prism.svg"
         },
         "origin": "Corner point indicated in the prism reference figure.",
         "x_axis": "Longitudinal direction along the prism length.",
@@ -75,7 +75,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "path": "figures/geometries/cube.png"
+          "path": "figures/geometries/generated/cube.svg"
         },
         "origin": "Corner point indicated in the cube reference figure.",
         "x_axis": "Direction along one cube edge.",
@@ -102,7 +102,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "path": "figures/geometries/cylinder.png"
+          "path": "figures/geometries/generated/cylinder.svg"
         },
         "origin": "Center of the upper circular end face at z = 0, marked O in the cylinder reference figure.",
         "x_axis": "First transverse direction in the circular x-y cross section.",
@@ -138,7 +138,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "path": "figures/geometries/notched_prism.png"
+          "path": "figures/geometries/generated/notched_prism.svg"
         },
         "origin": "Midspan point on the specimen centerline indicated in the notched-prism reference figure.",
         "x_axis": "Longitudinal direction along the specimen length.",
@@ -222,7 +222,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "path": "figures/geometries/dogbone.png"
+          "path": "figures/geometries/generated/dogbone.svg"
         },
         "origin": "Reference point indicated in the dogbone reference figure.",
         "x_axis": "Width direction in the specimen plane.",
@@ -319,7 +319,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "path": "figures/geometries/ell_shape.png"
+          "path": "figures/geometries/generated/ell_shape.svg"
         },
         "origin": "Upper-left exterior corner on the rear face of the specimen, marked O in the ell-shape reference figure.",
         "x_axis": "Horizontal leg direction.",
@@ -378,7 +378,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "path": "figures/geometries/notched_cylinder.png"
+          "path": "figures/geometries/generated/notched_cylinder.svg"
         },
         "origin": "Center of the upper circular end face at z = 0, marked O in the notched-cylinder reference figure.",
         "x_axis": "First transverse direction in the circular x-y cross section.",
