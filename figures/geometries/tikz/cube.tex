@@ -1,0 +1,103 @@
+% GLOB-GEO0002 v1.0.0. Geometry and projections follow the CIVITA library,
+% cube.png, and the geometry figure design standard.
+% Build from this directory with SOURCE_DATE_EPOCH=0 and
+% pdflatex -halt-on-error -no-shell-escape cube.tex. Convert the PDF with
+% pdftocairo -svg cube.pdf cube.svg.
+\documentclass[border=1pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tikz}
+\input{civita_geometry_style.tex}
+\pdfinfoomitdate=1
+
+% Illustrative edge length in mm. The printed dimension is symbolic.
+\newcommand{\CubeLength}{100}
+\newcommand{\CubeOrthoScale}{.62}
+\newcommand{\CubeIsoScale}{.57}
+\pgfmathsetmacro{\CubeIsoHorizontal}{\CubeIsoScale/sqrt(2)}
+\pgfmathsetmacro{\CubeIsoDown}{\CubeIsoScale/sqrt(6)}
+\pgfmathsetmacro{\CubeIsoUp}{2*\CubeIsoDown}
+
+% In the reference, the three positive axes run into the specimen from O.
+% Project these same local points in each panel.
+\newcommand{\CubePoints}{%
+  \coordinate (cube-o) at (0,0,0);
+  \coordinate (cube-x) at (\CubeLength,0,0);
+  \coordinate (cube-y) at (0,\CubeLength,0);
+  \coordinate (cube-z) at (0,0,\CubeLength);
+  \coordinate (cube-xy) at (\CubeLength,\CubeLength,0);
+  \coordinate (cube-xz) at (\CubeLength,0,\CubeLength);
+  \coordinate (cube-yz) at (0,\CubeLength,\CubeLength);
+  \coordinate (cube-xyz) at (\CubeLength,\CubeLength,\CubeLength);
+  \coordinate (axis-x) at (28,0,0);
+  \coordinate (axis-y) at (0,28,0);
+  \coordinate (axis-z) at (0,0,28);
+}
+
+\begin{document}
+\begin{tikzpicture}[civita/figure]
+  \CivitaCanvas
+
+  \begin{CivitaPanel}{1}{1}{(a) 3D View}
+    % View along (-1,-1,-1), with positive z projected upward.
+    \begin{scope}[shift={(90,67)},x={(-\CubeIsoHorizontal pt,-\CubeIsoDown pt)},
+      y={(\CubeIsoHorizontal pt,-\CubeIsoDown pt)},z={(0pt,\CubeIsoUp pt)}]
+      \CubePoints
+      \path[civita/front] (cube-y) -- (cube-xy) -- (cube-xyz) -- (cube-yz) -- cycle;
+      \path[civita/side] (cube-x) -- (cube-xy) -- (cube-xyz) -- (cube-xz) -- cycle;
+      \path[civita/end] (cube-z) -- (cube-xz) -- (cube-xyz) -- (cube-yz) -- cycle;
+      \draw[civita/edge] (cube-x) -- (cube-xz) -- (cube-z) -- (cube-yz)
+        -- (cube-y) -- (cube-xy) -- cycle;
+      \draw[civita/edge] (cube-xyz) -- (cube-xz)
+        (cube-xyz) -- (cube-yz)
+        (cube-xyz) -- (cube-xy);
+      % O projects onto the visible opposite corner on the viewing diagonal.
+      % Its own incident edges are hidden and carry the local positive axes.
+      \draw[civita/hidden] (cube-o) -- (cube-x)
+        (cube-o) -- (cube-y)
+        (cube-o) -- (cube-z);
+    \end{scope}
+    \CivitaAxis{cube-o}{axis-x}{north west}{x}
+    \CivitaAxis{cube-o}{axis-y}{south west}{y}
+    \CivitaAxis{cube-o}{axis-z}{west}{z}
+    \CivitaOrigin[xshift=4pt,yshift=-8pt]{cube-o}{north west}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{1}{2}{(b) x-y View}
+    % View along -z, with positive x to the right and positive y upward.
+    \begin{scope}[shift={(59,42)},x={(\CubeOrthoScale pt,0pt)},
+      y={(0pt,\CubeOrthoScale pt)},z={(0pt,0pt)}]
+      \CubePoints
+      \draw[civita/edge] (cube-o) rectangle (cube-xy);
+    \end{scope}
+    \CivitaHorizontalDimension{cube-o}{cube-x}{33}{\CivitaParameter{length}}
+    \CivitaAxis{cube-o}{axis-x}{south west}{x}
+    \CivitaAxis{cube-o}{axis-y}{west}{y}
+    \CivitaOrigin{cube-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{1}{(c) x-z View}
+    % View along +y, with positive x to the right and positive z upward.
+    \begin{scope}[shift={(59,42)},x={(\CubeOrthoScale pt,0pt)},
+      y={(0pt,0pt)},z={(0pt,\CubeOrthoScale pt)}]
+      \CubePoints
+      \draw[civita/edge] (cube-o) rectangle (cube-xz);
+    \end{scope}
+    \CivitaAxis{cube-o}{axis-x}{south west}{x}
+    \CivitaAxis{cube-o}{axis-z}{west}{z}
+    \CivitaOrigin{cube-o}{north east}
+  \end{CivitaPanel}
+
+  \begin{CivitaPanel}{2}{2}{(d) y-z View}
+    % View along -x, with positive y to the right and positive z upward.
+    \begin{scope}[shift={(59,42)},x={(0pt,0pt)},
+      y={(\CubeOrthoScale pt,0pt)},z={(0pt,\CubeOrthoScale pt)}]
+      \CubePoints
+      \draw[civita/edge] (cube-o) rectangle (cube-yz);
+    \end{scope}
+    \CivitaAxis{cube-o}{axis-y}{south west}{y}
+    \CivitaAxis{cube-o}{axis-z}{west}{z}
+    \CivitaOrigin{cube-o}{north east}
+  \end{CivitaPanel}
+\end{tikzpicture}
+\end{document}
