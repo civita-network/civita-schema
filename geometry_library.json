@@ -1,4 +1,13 @@
 {
+  "metadata": {
+    "id": "civita.common.geometry_library",
+    "title": "CIVITA Geometry Library",
+    "description": "Shared, versioned definitions of geometry types, parametrizations, and reference coordinate systems used across CIVITA modules.",
+    "type": "library",
+    "version": "1.0.0",
+    "status": "draft",
+    "repository": "https://github.com/civita-network/civita-schema"
+  },
   "library_name": "civita_geometry_library",
   "version": "1.0.0",
   "description": "Shared, versioned parametrization of geometry types used across CIVITA. Each geometry type defines parameters and a right-handed local coordinate system; numerical parameter values and context-specific identifiers belong to individual experimental or computational records.",
@@ -9,9 +18,9 @@
     "geometry_type_identifier_pattern": "^GLOB-GEO[0-9]{4}$",
     "geometry_type_references": "Consumers reference geometry_type_id and geometry_type_version; the local geometry record independently stores parameter values and any dataset-specific metadata.",
     "reference_system_convention": "The origin and positive local axis directions are defined by the reference figure together with the textual definition. All local axes form a right-handed Cartesian system.",
-    "versioning_policy": "Published geometry type versions are immutable. A change affecting geometric meaning, parametrization, or reference system requires a new version.",
-    "documentation_repository": "https://github.com/civita-network/civita-documentation",
-    "reference_figures_note": "Figure URLs currently point to main for convenience. For immutable published releases, pin each figure reference to a documentation commit SHA or release tag corresponding to the library version."
+    "versioning_policy": "Published geometry type versions are immutable. Changes affecting scientific interpretation of the parametrization, reference system, or figure require an appropriate geometry type version update.",
+    "reference_figures_note": "Maintain each authoritative figure and its geometry definition together. Published references must identify an immutable repository commit or release and resolve the figure paths at that same revision.",
+    "figure_path_base": "Figure paths are relative to the root of civita-schema."
   },
   "geometries": {
     "prism": {
@@ -23,9 +32,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "repository": "civita-network/civita-documentation",
-          "path": "figs/geometries/prism.png",
-          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/prism.png"
+          "path": "figures/geometries/prism.png"
         },
         "origin": "Corner point indicated in the prism reference figure.",
         "x_axis": "Longitudinal direction along the prism length.",
@@ -68,9 +75,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "repository": "civita-network/civita-documentation",
-          "path": "figs/geometries/cube.png",
-          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/cube.png"
+          "path": "figures/geometries/cube.png"
         },
         "origin": "Corner point indicated in the cube reference figure.",
         "x_axis": "Direction along one cube edge.",
@@ -97,9 +102,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "repository": "civita-network/civita-documentation",
-          "path": "figs/geometries/cylinder.png",
-          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/cylinder.png"
+          "path": "figures/geometries/cylinder.png"
         },
         "origin": "Reference point indicated in the cylinder reference figure.",
         "x_axis": "Cylinder longitudinal axis along the cylinder length.",
@@ -135,9 +138,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "repository": "civita-network/civita-documentation",
-          "path": "figs/geometries/notched_prism.png",
-          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/notched_prism.png"
+          "path": "figures/geometries/notched_prism.png"
         },
         "origin": "Midspan point on the specimen centerline indicated in the notched-prism reference figure.",
         "x_axis": "Longitudinal direction along the specimen length.",
@@ -212,9 +213,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "repository": "civita-network/civita-documentation",
-          "path": "figs/geometries/dogbone.png",
-          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/dogbone.png"
+          "path": "figures/geometries/dogbone.png"
         },
         "origin": "Reference point indicated in the dogbone reference figure.",
         "x_axis": "Longitudinal direction along the full specimen length.",
@@ -297,9 +296,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "repository": "civita-network/civita-documentation",
-          "path": "figs/geometries/ell_shape.png",
-          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/ell_shape.png"
+          "path": "figures/geometries/ell_shape.png"
         },
         "origin": "Upper-left exterior corner on the rear face of the specimen, marked O in the ell-shape reference figure.",
         "x_axis": "Horizontal leg direction.",
@@ -358,9 +355,7 @@
       "reference_system": {
         "type": "right_handed_cartesian",
         "figure": {
-          "repository": "civita-network/civita-documentation",
-          "path": "figs/geometries/notched_cylinder.png",
-          "url": "https://github.com/civita-network/civita-documentation/blob/main/figs/geometries/notched_cylinder.png"
+          "path": "figures/geometries/notched_cylinder.png"
         },
         "origin": "Reference point indicated in the notched-cylinder reference figure.",
         "x_axis": "Cylinder longitudinal axis along the cylinder length.",
@@ -413,10 +408,11 @@
     }
   },
   "validation_conventions": {
-    "parameters": "Each geometry instance must supply all parameters marked required for its referenced geometry type. Additional parameters are subject to the versioned type definition.",
+    "geometry_type_resolution": "Resolve the exact geometry_type_id and geometry_type_version in the common library. Reject a geometry instance if that pair cannot be resolved.",
+    "parameters": "Require the parameters marked as required for the resolved geometry type version. Reject unknown names unless that definition expressly permits them.",
     "numeric_parameters": "Parameter values must be finite numbers in the declared units.",
     "positive_dimensions": "Dimensions marked exclusiveMinimum: 0 must be strictly positive. Nonnegative radii may equal zero. Offset parameters may be signed.",
-    "geometric_constraints": "Geometric compatibility conditions, such as maximum notch depth, must be enforced by geometry-specific validators. Their formal definitions are to be developed without changing existing parameter semantics.",
+    "geometric_constraints": "Apply geometry-specific compatibility constraints when formally defined by the resolved geometry type version.",
     "local_identifiers": "Experimental and computational geometry record identifiers, publication source identifiers, and submission file formats are intentionally outside the scope of this global library."
   }
 }

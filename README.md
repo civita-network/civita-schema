@@ -47,6 +47,25 @@ foreach ($source in $dataset.literature_sources) {
 }
 ```
 
+## Geometry library
+
+The [CIVITA Geometry Library](geometry_library.json) is the shared registry of geometry types, their numerical parametrizations, and their local coordinate systems. Each geometry instance records its local identifier and numerical values together with the global `geometry_type_id` and `geometry_type_version` that define their meaning.
+
+The authoritative [reference figures](figures/geometries/) are maintained with the JSON definitions. Resolve the library and its repository-relative figure paths at the same immutable commit or release. Update the JSON and figure together when a geometry changes. A change to scientific interpretation requires an appropriate new geometry type version.
+
+`metadata.version` identifies the library specification as a whole. The root-level `version` mirrors it for compatibility. Each geometry type retains its independent version, which identifies the definition used by existing instances.
+
+The figures in `civita-documentation` are legacy copies. Stage 2 will synchronize them from the common library and generate the corresponding LaTeX from a pinned revision.
+
+### Reference figure discrepancies for expert review
+
+| Geometry | Element to review |
+| --- | --- |
+| `GLOB-GEO0003` ([cylinder](figures/geometries/cylinder.png)) | The figure labels the cylinder axis `z` and shows the diameter in the `x-y` plane. The JSON assigns the longitudinal axis to `x` and the diameter to the `y-z` plane. |
+| `GLOB-GEO0004` ([notched prism](figures/geometries/notched_prism.png)) | The notch depth arrow spans upward from the lower face, while positive `z` points downward. Clarify that the positive scalar `notch_depth` is measured along the axis into the specimen. |
+| `GLOB-GEO0005` ([dogbone](figures/geometries/dogbone.png)) | The drawing puts length along `z`, width along `x`, and thickness along `y`. The JSON assigns these to `x`, `y`, and `z`, respectively. The figure labels `dogbone_head_width` as “width” and `dogbone_thickness` as “thickness.” Confirm whether `dogbone_transition_width` denotes the one-sided setback shown or the full width change. |
+| `GLOB-GEO0007` ([notched cylinder](figures/geometries/notched_cylinder.png)) | The drawing uses `z` as the cylinder axis and shows notch width along that axis. The JSON uses `x` for both. The inset shows radial notch depth. The JSON leaves the axial location and circumferential extent unspecified. |
+
 ## License and Copyright
 
 Original technical schemas, interface definitions, and the build script are licensed under [MIT](LICENSE). Eligible terms in `source_types.json` and public metadata use [CC0 1.0](LICENSE-CC0). See [the local license scope](LICENSING.md) for scientific documentation and linked assets. Copyright in original software contributions remains with the respective contributors or other applicable rights holders.
